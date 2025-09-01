@@ -3,10 +3,12 @@ const path = require('path');
 const PizZip = require('pizzip');
 const Docxtemplater = require('docxtemplater');
 const admin = require('firebase-admin');
+const libre = require('libreoffice-convert');
+const util = require('util');
 const { print } = require('pdf-to-printer');
-const docxConverter = require('docx-pdf');
 
 const db = admin.firestore();
+const libreConvert = util.promisify(libre.convert);
 
 const toUpper = (s) => (s ?? '').toString().trim().toUpperCase();
 const capFirst = (s) =>
@@ -140,20 +142,16 @@ exports.printMultipleBonafide = async (req, res) => {
         type: 'nodebuffer',
         compression: 'DEFLATE',
       });
+
       const tempDocxPath = path.join(tempDir, `${docId}.docx`);
       const tempPdfPath = path.join(tempDir, `${docId}.pdf`);
       fs.writeFileSync(tempDocxPath, buf);
 
       console.log(`Converting DOCX to PDF for: ${docId}`);
-      await new Promise((resolve, reject) => {
-        docxConverter(tempDocxPath, tempPdfPath, (err) => {
-          if (err) return reject(err);
-          console.log('PDF conversion done for:', docId);
-          resolve();
-        });
-      });
+      const pdfBuf = await libreConvert(buf, '.pdf', undefined);
+      fs.writeFileSync(tempPdfPath, pdfBuf);
+      console.log('PDF conversion done for:', docId);
 
-      // Print if printer is configured
       if (printerName) {
         await print(tempPdfPath, { printer: printerName, duplex: false });
         console.log(`Printed Bonafide for: ${student.name}`);
