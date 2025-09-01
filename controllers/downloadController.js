@@ -4,11 +4,9 @@ const PizZip = require('pizzip');
 const Docxtemplater = require('docxtemplater');
 const admin = require('firebase-admin');
 const libre = require('libreoffice-convert');
-const util = require('util');
 const { print } = require('pdf-to-printer');
 
 const db = admin.firestore();
-const libreConvert = util.promisify(libre.convert);
 
 const toUpper = (s) => (s ?? '').toString().trim().toUpperCase();
 const capFirst = (s) =>
@@ -61,27 +59,14 @@ exports.printMultipleBonafide = async (req, res) => {
   try {
     console.log('printMultipleBonafide route hit');
 
-    // Fetch printer name dynamically from Firestore
-    const printerDoc = await db
-      .collection('settings')
-      .doc('printerConfig')
-      .get();
-    const printerName = printerDoc.exists
-      ? printerDoc.data().printerName
-      : null;
-
-    if (!printerName) {
-      console.warn('No printer configured. PDFs will not be printed.');
-    }
-
+    const PDFMerger = (await import('pdf-merger-js')).default;
     const ids = (req.query.ids || '')
       .split(',')
       .map((id) => id.trim())
       .filter(Boolean);
+    if (!ids.length) return res.status(400).send('No document IDs provided');
 
-    if (ids.length === 0)
-      return res.status(400).send('No document IDs provided');
-
+    const merger = new PDFMerger();
     const tempDir = path.join(__dirname, '../temp');
     if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
 
@@ -143,22 +128,22 @@ exports.printMultipleBonafide = async (req, res) => {
         compression: 'DEFLATE',
       });
 
-      const tempDocxPath = path.join(tempDir, `${docId}.docx`);
-      const tempPdfPath = path.join(tempDir, `${docId}.pdf`);
-      fs.writeFileSync(tempDocxPath, buf);
-
       console.log(`Converting DOCX to PDF for: ${docId}`);
-      const pdfBuf = await libreConvert(buf, '.pdf', undefined);
-      fs.writeFileSync(tempPdfPath, pdfBuf);
+      const pdfBuf = await libre.convert(buf, '.pdf', undefined); // no promisify needed
       console.log('PDF conversion done for:', docId);
 
-      if (printerName) {
-        await print(tempPdfPath, { printer: printerName, duplex: false });
-        console.log(`Printed Bonafide for: ${student.name}`);
-      }
+      const tempPath = path.join(tempDir, `${docId}.pdf`);
+      fs.writeFileSync(tempPath, pdfBuf);
+      await merger.add(tempPath);
     }
 
-    // Cleanup temp folder
+    const mergedPath = path.join(tempDir, 'merged.pdf');
+    await merger.save(mergedPath);
+
+    await print(mergedPath, { printer: 'HP LaserJet 1020' });
+
+    console.log('Merged PDF printed successfully');
+
     fs.readdirSync(tempDir).forEach((file) =>
       fs.unlinkSync(path.join(tempDir, file))
     );
