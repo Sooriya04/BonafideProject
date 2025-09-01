@@ -1,0 +1,289 @@
+<html>
+  <head>
+    <title>Admin – Bonafide Requests</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        background-color: #fffdf5;
+        font-family: 'Roboto', sans-serif;
+        margin: 0;
+        color: #333;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        padding: 10px 30px;
+      }
+      header img {
+        width: 260px;
+        height: auto;
+      }
+      h2 {
+        text-align: center;
+        margin: 30px 0 20px;
+        color: maroon;
+        font-weight: bold;
+      }
+      .search-bar {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 25px auto 35px;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .search-bar input {
+        padding: 12px 18px;
+        border-radius: 30px;
+        border: 1px solid maroon;
+        min-width: 240px;
+        font-size: 15px;
+        outline: none;
+        transition: 0.25s;
+      }
+      .search-bar input:focus {
+        border-color: #a83232;
+        box-shadow: 0 0 8px rgba(128, 0, 0, 0.25);
+      }
+      .search-bar button {
+        background-color: maroon;
+        border: none;
+        border-radius: 30px;
+        padding: 12px 22px;
+        font-size: 15px;
+        font-weight: bold;
+        color: white;
+        cursor: pointer;
+        transition: 0.25s;
+      }
+      .search-bar button:hover {
+        background-color: #a83232;
+        transform: translateY(-1px);
+      }
+      .search-bar .reset-btn {
+        background-color: maroon;
+        border-radius: 30px;
+        padding: 12px 20px;
+        font-size: 15px;
+        text-decoration: none;
+        color: #fff;
+        font-weight: bold;
+        transition: 0.25s;
+      }
+      .search-bar .reset-btn:hover {
+        background-color: #a83232;
+      }
+      .table-container {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 0 auto;
+        max-width: 95%;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: center;
+      }
+      thead {
+        background-color: maroon;
+        color: white;
+      }
+      th,
+      td {
+        padding: 12px 10px;
+        border: 1px solid #ddd;
+        font-size: 15px;
+      }
+      tbody tr:nth-child(even) {
+        background-color: #f9f9f9;
+      }
+      .btn-action {
+        background-color: maroon;
+        border: none;
+        border-radius: 15px;
+        padding: 6px 12px;
+        font-size: 14px;
+        text-decoration: none !important;
+        color: white;
+        cursor: pointer;
+        transition: 0.2s;
+        display: inline-block;
+        margin: 2px;
+      }
+      .btn-action:hover {
+        background-color: #a83232;
+      }
+      .pagination {
+        display: flex;
+        justify-content: center;
+        list-style: none;
+        padding: 0;
+        margin: 25px 0 40px;
+        gap: 6px;
+      }
+      .pagination a {
+        text-decoration: none;
+        color: maroon;
+        padding: 6px 12px;
+        border: 1px solid maroon;
+        border-radius: 8px;
+        transition: 0.2s;
+      }
+      .pagination a.active {
+        background-color: maroon;
+        color: white;
+      }
+      .pagination a:hover {
+        background-color: #f1e3e3;
+      }
+      .print-btn {
+        display: block;
+        margin: 15px auto;
+        padding: 10px 20px;
+        font-size: 15px;
+        font-weight: bold;
+        background: maroon;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+      .print-btn:hover {
+        background: #a83232;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <img
+        src="https://www.tce.edu/themes/gavias_edmix/logo.svg"
+        alt="TCE Logo"
+      />
+      <a
+        href="/admin/settings"
+        style="
+          margin-left: auto;
+          color: maroon;
+          font-weight: bold;
+          text-decoration: none;
+        "
+      >
+        ⚙️ Admin Settings
+      </a>
+    </header>
+
+    <div class="container">
+      <h2>Bonafide Requests</h2>
+
+      <form method="GET" action="/admin" class="search-bar">
+        <input
+          type="text"
+          name="rollno"
+          value="<%= rollno || '' %>"
+          placeholder="Search by Roll No"
+        />
+        <input
+          type="text"
+          name="name"
+          value="<%= name || '' %>"
+          placeholder="Search by Name"
+        />
+        <button type="submit">Search</button>
+        <a href="/admin" class="reset-btn">Reset</a>
+      </form>
+
+      <button id="printSelected" class="print-btn">Print Selected</button>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th><input type="checkbox" onclick="toggleAll(this)" /></th>
+              <th>Name</th>
+              <th>Roll No</th>
+              <th>Branch</th>
+              <th>Year</th>
+              <th>Certificate For</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% forms.forEach(f => { %>
+            <tr>
+              <td>
+                <input
+                  type="checkbox"
+                  class="recordCheckbox"
+                  value="<%= f.id %>"
+                />
+              </td>
+              <td><%= f.name %></td>
+              <td><%= f.rollno %></td>
+              <td><%= f.branch %></td>
+              <td><%= f.year %></td>
+              <td><%= f.certificateFor %></td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <ul class="pagination">
+        <% for(let i = 1; i <= totalPages; i++) { %>
+        <li>
+          <a
+            href="/admin?page=<%= i %>&rollno=<%= rollno || '' %>&name=<%= name || '' %>"
+            class="<%= i === currentPage ? 'active' : '' %>"
+            ><%= i %></a
+          >
+        </li>
+        <% } %>
+      </ul>
+
+      <script>
+        function toggleAll(source) {
+          document
+            .querySelectorAll('.recordCheckbox')
+            .forEach((cb) => (cb.checked = source.checked));
+        }
+
+        document
+          .getElementById('printSelected')
+          .addEventListener('click', async () => {
+            const ids = Array.from(
+              document.querySelectorAll('.recordCheckbox:checked')
+            ).map((cb) => cb.value);
+            if (ids.length === 0)
+              return alert('⚠️ Please select at least one student');
+
+            const res = await fetch(`/print/multiple?ids=${ids.join(',')}`);
+            if (!res.ok) return alert('❌ Error generating PDF');
+
+            const pdfBlob = await res.blob();
+            const pdfUrl = URL.createObjectURL(pdfBlob);
+
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+              <html>
+                <head><title>Print Bonafide</title></head>
+                <body style="margin:0">
+                  <iframe src="${pdfUrl}" style="width:100%;height:100vh;" frameborder="0"></iframe>
+                </body>
+              </html>
+            `);
+            printWindow.document.close();
+
+            printWindow.onload = () => {
+              printWindow.focus();
+              printWindow.print();
+            };
+          });
+      </script>
+    </div>
+  </body>
+</html>

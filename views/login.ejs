@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Login</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="/css/login.css" />
+    <script type="module">
+      import {
+        validateSignupForm,
+        togglePasswordVisibility,
+      } from '/js/validation.js';
+      window.validateForm = validateSignupForm;
+      window.togglePasswordVisibility = togglePasswordVisibility;
+    </script>
+  </head>
+  <body>
+    <header class="app-header d-flex align-items-center px-3 py-2 shadow-sm">
+      <img
+        src="https://www.tce.edu/themes/gavias_edmix/logo.svg"
+        alt="TCE Logo"
+      />
+    </header>
+
+    <div class="container">
+      <div class="card form-card">
+        <div id="alertPlaceholder">
+          <% if (error) { %>
+          <div
+            class="alert alert-warning alert-dismissible fade show"
+            role="alert"
+          >
+            <strong>Warning!</strong> <%= error %>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="alert"
+              aria-label="Close"
+            ></button>
+          </div>
+          <% } %> <% if (message) { %>
+          <div
+            class="alert alert-success alert-dismissible fade show"
+            role="alert"
+          >
+            <strong>Success!</strong> <%= message %>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="alert"
+              aria-label="Close"
+            ></button>
+          </div>
+          <% } %>
+        </div>
+
+        <h2 class="text-center title mb-2">Login</h2>
+        <p class="subtitle text-center">Welcome back! Please log in.</p>
+
+        <form
+          name="loginForm"
+          action="/auth/login"
+          method="POST"
+          onsubmit="return validateForm()"
+        >
+          <div class="mb-3">
+            <label for="email" class="form-label">Email ID</label>
+            <input
+              type="email"
+              name="email"
+              class="form-control"
+              id="email"
+              placeholder="Enter your email"
+            />
+          </div>
+
+          <div class="mb-3 position-relative">
+            <label for="password" class="form-label">Password</label>
+            <div class="input-group">
+              <input
+                type="password"
+                name="password"
+                class="form-control"
+                id="password"
+                placeholder="Enter password"
+              />
+              <span class="input-group-text" onclick="togglePassword()">
+                <i class="bi bi-eye" id="toggleIcon"></i>
+              </span>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-login w-100 mb-2">Login</button>
+
+          <div class="text-end mb-3">
+            <a href="/auth/forgot-password" class="text-decoration-none"
+              >Forgot password?</a
+            >
+          </div>
+        </form>
+
+        <div class="text-center mt-2">
+          <span>Don't have an account?</span>
+          <a href="/auth/signup" class="text-decoration-none text-switch"
+            >Sign up</a
+          >
+        </div>
+
+        <button id="googleLoginBtn" type="button" class="w-100 mt-3">
+          <i class="bi bi-google google-icon"></i>
+          Continue with Google
+        </button>
+      </div>
+    </div>
+
+    <script>
+      function togglePassword() {
+        const passwordField = document.getElementById('password');
+        const toggleIcon = document.getElementById('toggleIcon');
+
+        if (passwordField.type === 'password') {
+          passwordField.type = 'text';
+          toggleIcon.classList.remove('bi-eye');
+          toggleIcon.classList.add('bi-eye-slash');
+        } else {
+          passwordField.type = 'password';
+          toggleIcon.classList.remove('bi-eye-slash');
+          toggleIcon.classList.add('bi-eye');
+        }
+      }
+    </script>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script>
+      window.firebaseConfig = {
+        apiKey: '<%= process.env.apiKey %>',
+        authDomain: '<%= process.env.authDomain %>',
+        projectId: '<%= process.env.projectId %>',
+        storageBucket: '<%= process.env.storageBucket %>',
+        messagingSenderId: '<%= process.env.messagingSenderId %>',
+        appId: '<%= process.env.appID %>',
+      };
+    </script>
+
+    <script type="module" src="/js/googleAuth.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

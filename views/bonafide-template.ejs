@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Bonafide Certificate</title>
+    <style>
+      body {
+        font-family: serif;
+        width: 80%;
+        margin: auto;
+        line-height: 1.6;
+      }
+      .center {
+        text-align: center;
+      }
+      .right {
+        text-align: right;
+      }
+      .justify {
+        text-align: justify;
+      }
+      .header-line {
+        margin: 20px 0;
+        border-top: 2px solid black;
+      }
+      .footer-line {
+        margin: 40px 0 10px;
+        border-top: 1px solid black;
+      }
+    </style>
+  </head>
+  <body>
+    <h2 class="center">THIAGARAJAR COLLEGE OF ENGINEERING, MADURAI - 625015</h2>
+    <p class="center">
+      (A Govt.Aided Autonomous Institution affiliated to Anna University)
+    </p>
+
+    <div class="header-line"></div>
+
+    <p>
+      No.D/<%= new Date().getFullYear() %>
+      <span class="right" style="float: right">Date: <%= student.date %></span>
+    </p>
+
+    <h3 class="center" style="text-decoration: underline">
+      BONAFIDE CERTIFICATE
+    </h3>
+
+    <p class="justify">
+      Certified that <strong><%= student.title %> <%= student.name %></strong>,
+      (Roll No: <strong><%= student.rollno %></strong>)
+      <strong><%= student.relation %> <%= student.parentName %></strong>
+      is a bonafide student of this College studying in
+      <strong
+        ><%= student.year %> Year, <%= student.course %> - <%= student.branch
+        %></strong
+      >
+      during the year
+      <strong
+        ><%= new Date().getFullYear() %>-<%= new Date().getFullYear() + 1
+        %></strong
+      >.
+    </p>
+
+    <p class="justify">
+      This Certificate is issued to enable him to apply for
+      <strong><%= student.certificateFor %></strong>.
+    </p>
+
+    <p class="right" style="margin-top: 60px">PRINCIPAL</p>
+
+    <div class="footer-line"></div>
+    <p>
+      Ph.No. 0452-2482240-42 &nbsp;&nbsp;&nbsp; Fax No: 0452-2483427
+      &nbsp;&nbsp;&nbsp; Email: tceoffice@tce.edu
+    </p>
+  </body>
+</html>
