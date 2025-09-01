@@ -5,9 +5,12 @@ const Docxtemplater = require('docxtemplater');
 const admin = require('firebase-admin');
 const libre = require('libreoffice-convert');
 const { print } = require('pdf-to-printer');
+const util = require('util');
 
 const db = admin.firestore();
+const libreConvert = util.promisify(libre.convert);
 
+// Helpers
 const toUpper = (s) => (s ?? '').toString().trim().toUpperCase();
 const capFirst = (s) =>
   s
@@ -64,6 +67,7 @@ exports.printMultipleBonafide = async (req, res) => {
       .split(',')
       .map((id) => id.trim())
       .filter(Boolean);
+
     if (!ids.length) return res.status(400).send('No document IDs provided');
 
     const merger = new PDFMerger();
@@ -83,6 +87,7 @@ exports.printMultipleBonafide = async (req, res) => {
       const yearNow = new Date().getFullYear();
       const academicYear = `${yearNow}-${yearNow + 1}`;
 
+      // Load template from file system
       const templatePath = path.resolve(
         __dirname,
         '../templates/Bonafide_Certificate.docx'
@@ -129,7 +134,7 @@ exports.printMultipleBonafide = async (req, res) => {
       });
 
       console.log(`Converting DOCX to PDF for: ${docId}`);
-      const pdfBuf = await libre.convert(buf, '.pdf', undefined); // no promisify needed
+      const pdfBuf = await libreConvert(buf, '.pdf', undefined);
       console.log('PDF conversion done for:', docId);
 
       const tempPath = path.join(tempDir, `${docId}.pdf`);
@@ -140,10 +145,17 @@ exports.printMultipleBonafide = async (req, res) => {
     const mergedPath = path.join(tempDir, 'merged.pdf');
     await merger.save(mergedPath);
 
-    await print(mergedPath, { printer: 'HP LaserJet 1020' });
+    // Fetch printer from DB if needed
+    const printerDoc = await db.collection('settings').doc('printer').get();
+    const printerName = printerDoc.exists ? printerDoc.data().name : undefined;
 
+    await print(
+      mergedPath,
+      printerName ? { printer: printerName } : 'HP LaserJet 1020'
+    );
     console.log('Merged PDF printed successfully');
 
+    // Cleanup
     fs.readdirSync(tempDir).forEach((file) =>
       fs.unlinkSync(path.join(tempDir, file))
     );
