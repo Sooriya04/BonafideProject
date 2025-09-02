@@ -8,8 +8,10 @@ const { print } = require('pdf-to-printer');
 const util = require('util');
 
 const db = admin.firestore();
-const libreConvert = util.promisify(libre.convert);
-
+libre.convertAsync = util.promisify(libre.convert);
+libre._options = {
+  executablePath: '/usr/lib/libreoffice/program/soffice', // path inside your Docker container
+};
 // Helpers
 const toUpper = (s) => (s ?? '').toString().trim().toUpperCase();
 const capFirst = (s) =>
