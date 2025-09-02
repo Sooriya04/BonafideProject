@@ -145,15 +145,22 @@ exports.printMultipleBonafide = async (req, res) => {
     const mergedPath = path.join(tempDir, 'merged.pdf');
     await merger.save(mergedPath);
 
-    // Fetch printer from DB if needed
+    // Fetch printer from DB
     const printerDoc = await db.collection('settings').doc('printer').get();
     const printerName = printerDoc.exists ? printerDoc.data().name : undefined;
 
-    await print(
-      mergedPath,
-      printerName ? { printer: printerName } : 'HP LaserJet 1020'
-    );
-    console.log('Merged PDF printed successfully');
+    if (!printerName) {
+      throw new Error('No printer configured. Cannot print PDF.');
+    }
+
+    // Print PDF
+    try {
+      await print(mergedPath, { printer: printerName });
+      console.log('Merged PDF printed successfully');
+    } catch (printErr) {
+      console.error('Error printing PDF:', printErr);
+      throw new Error('Failed to print PDF: ' + printErr.message);
+    }
 
     // Cleanup
     fs.readdirSync(tempDir).forEach((file) =>
