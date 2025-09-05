@@ -1,3 +1,4 @@
+// controllers/downloadController.js
 const admin = require('firebase-admin');
 const ejs = require('ejs');
 const puppeteer = require('puppeteer');
@@ -23,6 +24,7 @@ exports.downloadBonafide = async (req, res) => {
       return res.status(404).send('No valid student records found');
     }
 
+    // Load template
     const templatePath = path.join(__dirname, '../views/bonafideTemplate.ejs');
     let allHtml = '';
 
@@ -31,10 +33,11 @@ exports.downloadBonafide = async (req, res) => {
       allHtml += `<div style="page-break-after: always;">${certHtml}</div>`;
     }
 
-    // Generate one combined PDF
+    // Puppeteer setup
     const browser = await puppeteer.launch({
-      headless: 'new',
+      headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      executablePath: puppeteer.executablePath(), // ✅ Works locally & on Render
     });
 
     const page = await browser.newPage();
