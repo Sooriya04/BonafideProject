@@ -1,8 +1,8 @@
+// controllers/downloadController.js
 const admin = require('firebase-admin');
 const ejs = require('ejs');
 const puppeteer = require('puppeteer');
 const path = require('path');
-const getPuppeteerPath = require('../utils/getPuppeteerPath');
 
 const db = admin.firestore();
 
@@ -23,7 +23,7 @@ exports.downloadBonafide = async (req, res) => {
       return res.status(404).send('No valid student records found');
     }
 
-    // Render HTML
+    // Render HTML for all students
     const templatePath = path.join(__dirname, '../views/bonafideTemplate.ejs');
     let allHtml = '';
     for (const s of students) {
@@ -31,9 +31,7 @@ exports.downloadBonafide = async (req, res) => {
       allHtml += `<div style="page-break-after: always;">${certHtml}</div>`;
     }
 
-    const executablePath = await getPuppeteerPath();
-    console.log('executablePath' + executablePath);
-
+    // Launch Puppeteer (bundled Chromium)
     const browser = await puppeteer.launch({
       headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
@@ -42,6 +40,7 @@ exports.downloadBonafide = async (req, res) => {
     const page = await browser.newPage();
     await page.setContent(allHtml, { waitUntil: 'networkidle0' });
 
+    // Generate PDF
     const buffer = await page.pdf({
       format: 'A4',
       printBackground: true,
@@ -50,7 +49,7 @@ exports.downloadBonafide = async (req, res) => {
 
     await browser.close();
 
-    // Send PDF
+    // Send PDF to client
     res.setHeader(
       'Content-Disposition',
       'inline; filename=bonafide-multiple.pdf'
