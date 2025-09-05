@@ -1,25 +1,27 @@
-// controllers/downloadController.js
 const admin = require('firebase-admin');
 const ejs = require('ejs');
 const puppeteer = require('puppeteer');
 const path = require('path');
+const getPuppeteerPath = require('../utils/getPuppeteerPath');
 
 const db = admin.firestore();
 
 exports.downloadBonafide = async (req, res) => {
   try {
     const ids = req.query.ids ? req.query.ids.split(',') : [];
-    if (ids.length === 0)
+    if (ids.length === 0) {
       return res.status(400).send('No student IDs provided');
+    }
 
-    // Fetch students
+    // Fetch student records
     const students = [];
     for (const id of ids) {
       const doc = await db.collection('bonafideForms').doc(id).get();
       if (doc.exists) students.push({ id: doc.id, ...doc.data() });
     }
-    if (students.length === 0)
-      return res.status(404).send('No valid records found');
+    if (students.length === 0) {
+      return res.status(404).send('No valid student records found');
+    }
 
     // Render HTML
     const templatePath = path.join(__dirname, '../views/bonafideTemplate.ejs');
@@ -29,11 +31,15 @@ exports.downloadBonafide = async (req, res) => {
       allHtml += `<div style="page-break-after: always;">${certHtml}</div>`;
     }
 
-    // Puppeteer
+    const executablePath = await getPuppeteerPath();
+    console.log('executablePath' + executablePath);
+
     const browser = await puppeteer.launch({
       headless: true,
+      executablePath,
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
+
     const page = await browser.newPage();
     await page.setContent(allHtml, { waitUntil: 'networkidle0' });
 
@@ -45,6 +51,7 @@ exports.downloadBonafide = async (req, res) => {
 
     await browser.close();
 
+    // Send PDF
     res.setHeader(
       'Content-Disposition',
       'inline; filename=bonafide-multiple.pdf'
