@@ -3,13 +3,16 @@ const ejs = require('ejs');
 const puppeteer = require('puppeteer');
 const path = require('path');
 
-async function generateBonafidePDF(data) {
-  // Point to the EJS template
+async function generateBonafidePDF(formData) {
+  // Render HTML from EJS template
   const templatePath = path.join(__dirname, '../views/bonafideTemplate.ejs');
-  const html = await ejs.renderFile(templatePath, { formData: data });
+  const html = await ejs.renderFile(templatePath, { formData });
 
+  // Launch Puppeteer using system Chrome
   const browser = await puppeteer.launch({
-    headless: 'new',
+    headless: true,
+    executablePath:
+      process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium-browser',
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
   });
 
