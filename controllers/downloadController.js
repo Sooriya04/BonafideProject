@@ -1,6 +1,6 @@
-// controllers/downloadController.js
 const admin = require('firebase-admin');
 const generateBonafidePDF = require('../helper/generateBonafidePDF');
+const { PDFDocument } = require('pdf-lib');
 
 const db = admin.firestore();
 
@@ -25,10 +25,8 @@ exports.downloadBonafide = async (req, res) => {
       pdfBuffers.push(buffer);
     }
 
-    // Merge all PDFs into one file (optional)
-    const { PDFDocument } = require('pdf-lib');
+    // Merge PDFs
     const mergedPdf = await PDFDocument.create();
-
     for (const buf of pdfBuffers) {
       const pdf = await PDFDocument.load(buf);
       const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
@@ -37,7 +35,7 @@ exports.downloadBonafide = async (req, res) => {
 
     const finalBuffer = await mergedPdf.save();
 
-    // Send merged PDF to client
+    // Send PDF
     res.setHeader(
       'Content-Disposition',
       'inline; filename=bonafide-multiple.pdf'

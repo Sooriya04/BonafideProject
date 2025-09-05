@@ -1,19 +1,15 @@
-// helper/generateBonafidePDF.js
 const ejs = require('ejs');
-const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer'); // FULL puppeteer ONLY
 const path = require('path');
 
 async function generateBonafidePDF(formData) {
-  // Render HTML from EJS template
   const templatePath = path.join(__dirname, '../views/bonafideTemplate.ejs');
   const html = await ejs.renderFile(templatePath, { formData });
 
-  // Launch Puppeteer using system Chrome
   const browser = await puppeteer.launch({
     headless: true,
-    executablePath:
-      process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium-browser',
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    // DO NOT set executablePath
   });
 
   const page = await browser.newPage();
