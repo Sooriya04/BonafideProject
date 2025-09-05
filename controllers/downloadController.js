@@ -1,3 +1,4 @@
+// controllers/downloadController.js
 const admin = require('firebase-admin');
 const generateBonafidePDF = require('../helper/generateBonafidePDF');
 const { PDFDocument } = require('pdf-lib');
@@ -7,35 +8,40 @@ const db = admin.firestore();
 exports.downloadBonafide = async (req, res) => {
   try {
     const ids = req.query.ids ? req.query.ids.split(',') : [];
-    if (!ids.length) return res.status(400).send('No student IDs provided');
+    if (!ids.length) {
+      return res.status(400).send('No student IDs provided');
+    }
 
-    // Fetch all student records
+    // Fetch student records from Firestore
     const students = [];
     for (const id of ids) {
       const doc = await db.collection('bonafideForms').doc(id).get();
-      if (doc.exists) students.push({ id: doc.id, ...doc.data() });
+      if (doc.exists) {
+        students.push({ id: doc.id, ...doc.data() });
+      }
     }
-    if (!students.length)
-      return res.status(404).send('No valid student records found');
 
-    // Generate PDFs for each student
+    if (!students.length) {
+      return res.status(404).send('No valid student records found');
+    }
+
+    // Generate PDFs for each student using your working Puppeteer helper
     const pdfBuffers = [];
     for (const student of students) {
-      const buffer = await generateBonafidePDF(student);
-      pdfBuffers.push(buffer);
+      const pdfBuffer = await generateBonafidePDF(student);
+      pdfBuffers.push(pdfBuffer);
     }
 
-    // Merge PDFs
+    // Merge all PDFs into a single PDF
     const mergedPdf = await PDFDocument.create();
     for (const buf of pdfBuffers) {
       const pdf = await PDFDocument.load(buf);
       const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
       copiedPages.forEach((page) => mergedPdf.addPage(page));
     }
-
     const finalBuffer = await mergedPdf.save();
 
-    // Send PDF
+    // Send merged PDF to client
     res.setHeader(
       'Content-Disposition',
       'inline; filename=bonafide-multiple.pdf'
