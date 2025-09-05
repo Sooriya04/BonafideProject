@@ -9,37 +9,31 @@ const db = admin.firestore();
 exports.downloadBonafide = async (req, res) => {
   try {
     const ids = req.query.ids ? req.query.ids.split(',') : [];
-    if (ids.length === 0) {
+    if (ids.length === 0)
       return res.status(400).send('No student IDs provided');
-    }
 
-    // Fetch all selected students
+    // Fetch students
     const students = [];
     for (const id of ids) {
       const doc = await db.collection('bonafideForms').doc(id).get();
       if (doc.exists) students.push({ id: doc.id, ...doc.data() });
     }
+    if (students.length === 0)
+      return res.status(404).send('No valid records found');
 
-    if (students.length === 0) {
-      return res.status(404).send('No valid student records found');
-    }
-
-    // Load template
+    // Render HTML
     const templatePath = path.join(__dirname, '../views/bonafideTemplate.ejs');
     let allHtml = '';
-
     for (const s of students) {
       const certHtml = await ejs.renderFile(templatePath, { formData: s });
       allHtml += `<div style="page-break-after: always;">${certHtml}</div>`;
     }
 
-    // Puppeteer setup
+    // Puppeteer
     const browser = await puppeteer.launch({
       headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
-      executablePath: puppeteer.executablePath(), // ✅ Works locally & on Render
     });
-
     const page = await browser.newPage();
     await page.setContent(allHtml, { waitUntil: 'networkidle0' });
 
