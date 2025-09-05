@@ -42,9 +42,8 @@ async function createFolderIfNotExists(folderName, parentId = null) {
  */
 async function uploadFile(buffer, fileName, folderId) {
   const media = {
-    mimeType:
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    body: Readable.from(buffer),
+    mimeType: 'application/pdf', // ✅ correct mime type for PDF
+    body: Readable.from([buffer]), // wrap buffer in array so it's a single chunk
   };
 
   const fileMetadata = {

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Bonafide Certificate</title>
+    <style>
+      @page {
+        size: A4;
+        margin: 20mm;
+      }
+      body {
+        font-family: 'Times New Roman', serif;
+        margin: 0;
+        padding: 0;
+        background: white;
+      }
+      .certificate {
+        width: 90%;
+        margin: auto;
+        line-height: 1.8; /* more spacing between lines */
+        font-size: 18px;
+        position: relative;
+        box-sizing: border-box;
+      }
+      .center {
+        text-align: center;
+      }
+      .row {
+        display: flex;
+        justify-content: space-between;
+        margin: 10px 0;
+      }
+      h2 {
+        font-size: 20px;
+        font-weight: bold;
+        margin-bottom: 0;
+      }
+      p.center {
+        margin-top: 2px;
+        font-size: 15px;
+      }
+      .header-line {
+        border-top: 2px solid black;
+        margin: 10px 0 20px;
+      }
+      h3 {
+        text-align: center;
+        font-size: 18px;
+        font-weight: bold;
+        margin: 25px 0;
+      }
+      .body-text {
+        text-align: justify;
+        font-size: 19px;
+        margin-top: 30px;
+      }
+      .signature {
+        margin-top: 250px;
+        text-align: right;
+        font-weight: bold;
+      }
+      .footer-line {
+        border-top: 1px solid black;
+        margin-top: 60px;
+      }
+      .footer {
+        text-align: center;
+        font-size: 14px;
+        margin-top: 5px;
+      }
+      .print-btn {
+        display: block;
+        margin: 20px auto;
+        padding: 10px 20px;
+        background: black;
+        color: white;
+        border: none;
+        font-size: 16px;
+        cursor: pointer;
+        border-radius: 6px;
+      }
+      .print-btn:hover {
+        background: #444;
+      }
+      @media print {
+        .print-btn {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="certificate">
+      <h3 class="center">
+        THIAGARAJAR COLLEGE OF ENGINEERING, MADURAI - 625015
+      </h3>
+      <p class="center">
+        (A Govt.Aided Autonomous Institution affiliated to Anna University)
+      </p>
+
+      <div class="header-line"></div>
+
+      <div class="row">
+        <p>No.D/2025</p>
+        <p>Date: <%= String(formData.date) %></p>
+      </div>
+
+      <h3>BONAFIDE CERTIFICATE</h3>
+
+      <p class="body-text">
+        Certified that
+        <strong
+          ><%= String(formData.title) %> <%= String(formData.name) %></strong
+        >, (Roll No: <strong><%= String(formData.rollno) %></strong>)
+        <strong
+          ><%= String(formData.relation) %> <%= String(formData.parentName)
+          %></strong
+        >
+        is a bonafide student of this College studying in
+        <strong
+          ><%= String(formData.year) %> Year, <%= String(formData.course) %> -
+          <%= String(formData.branch) %></strong
+        >
+        during the year <strong><%= formData.academicYear %></strong>.
+      </p>
+
+      <p class="body-text">
+        This Certificate is issued to enable him/her to apply for
+        <strong><%= String(formData.certificateFor) %></strong>
+        <% if (formData.scholarshipType) { %> (<%=
+        String(formData.scholarshipType) %>) <% } %>.
+      </p>
+
+      <p class="signature">PRINCIPAL</p>
+
+      <div class="footer-line"></div>
+
+      <p class="footer">
+        Ph.No. 0452-2482240-42 &nbsp;&nbsp;&nbsp; Fax No: 0452-2483427
+        &nbsp;&nbsp;&nbsp; Email: tceoffice@tce.edu
+      </p>
+    </div>
+
+    <!-- Print button outside certificate -->
+    <button class="print-btn" onclick="window.print()">
+      Print Certificate
+    </button>
+  </body>
+</html>
