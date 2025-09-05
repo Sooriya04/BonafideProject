@@ -1,8 +1,7 @@
 // controllers/downloadController.js
 const admin = require('firebase-admin');
-const ejs = require('ejs');
-const puppeteer = require('puppeteer');
 const path = require('path');
+const generateBonafidePDF = require('../helper/generateBonafidePDF');
 
 const db = admin.firestore();
 
@@ -11,7 +10,6 @@ exports.downloadBonafide = async (req, res) => {
     const ids = req.query.ids ? req.query.ids.split(',') : [];
     if (!ids.length) return res.status(400).send('No student IDs provided');
 
-    // Fetch student records
     const students = [];
     for (const id of ids) {
       const doc = await db.collection('bonafideForms').doc(id).get();
@@ -19,17 +17,25 @@ exports.downloadBonafide = async (req, res) => {
     }
     if (!students.length) return res.status(404).send('No valid records found');
 
-    // Render HTML for all students
-    const templatePath = path.join(__dirname, '../views/bonafideTemplate.ejs');
+    // Generate PDF for each student and combine into one
     let allHtml = '';
-    for (const s of students) {
-      const certHtml = await ejs.renderFile(templatePath, { formData: s });
-      allHtml += `<div style="page-break-after: always;">${certHtml}</div>`;
+    for (const student of students) {
+      const templatePath = path.join(
+        __dirname,
+        '../views/bonafideTemplate.ejs'
+      );
+      const html = await generateBonafidePDF(student); // returns PDF buffer
+      // Instead of merging buffers, we can render all HTML together
+      const ejsHtml = await require('ejs').renderFile(templatePath, {
+        formData: student,
+      });
+      allHtml += `<div style="page-break-after: always;">${ejsHtml}</div>`;
     }
 
-    // Launch Puppeteer with default Chromium
+    // Launch a single Puppeteer instance for all students
+    const puppeteer = require('puppeteer');
     const browser = await puppeteer.launch({
-      headless: true,
+      headless: 'new',
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
 
