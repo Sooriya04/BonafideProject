@@ -1,5 +1,4 @@
 const admin = require('firebase-admin');
-const generateBonafidePDF = require('../helper/generateBonafidePDF');
 const ejs = require('ejs');
 const puppeteer = require('puppeteer');
 const path = require('path');
@@ -9,8 +8,9 @@ const db = admin.firestore();
 exports.downloadBonafide = async (req, res) => {
   try {
     const ids = req.query.ids ? req.query.ids.split(',') : [];
-    if (ids.length === 0)
+    if (ids.length === 0) {
       return res.status(400).send('No student IDs provided');
+    }
 
     // Fetch all selected students
     const students = [];
@@ -19,10 +19,10 @@ exports.downloadBonafide = async (req, res) => {
       if (doc.exists) students.push({ id: doc.id, ...doc.data() });
     }
 
-    if (students.length === 0)
+    if (students.length === 0) {
       return res.status(404).send('No valid student records found');
+    }
 
-    // 🔹 Render one big HTML with multiple certificates
     const templatePath = path.join(__dirname, '../views/bonafideTemplate.ejs');
     let allHtml = '';
 
@@ -53,9 +53,9 @@ exports.downloadBonafide = async (req, res) => {
       'inline; filename=bonafide-multiple.pdf'
     );
     res.setHeader('Content-Type', 'application/pdf');
-    return res.send(buffer);
+    res.send(buffer);
   } catch (err) {
     console.error('Error generating multiple PDFs:', err);
-    return res.status(500).send('Error generating PDFs: ' + err.message);
+    res.status(500).send('Error generating PDFs: ' + err.message);
   }
 };

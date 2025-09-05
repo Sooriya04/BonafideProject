@@ -7,7 +7,7 @@
   "type": "commonjs",
   "main": "server.js",
   "scripts": {
-    "test": "npx nodemon server.js"
+    "start": "node server.js"
   },
   "dependencies": {
     "@google-cloud/connect-firestore": "^3.0.0",
