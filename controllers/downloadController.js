@@ -8,37 +8,33 @@ const db = admin.firestore();
 exports.downloadBonafide = async (req, res) => {
   try {
     const ids = req.query.ids ? req.query.ids.split(',') : [];
-    if (!ids.length) {
-      return res.status(400).send('No student IDs provided');
-    }
+    if (!ids.length) return res.status(400).send('No student IDs provided');
 
     // Fetch student records from Firestore
     const students = [];
     for (const id of ids) {
       const doc = await db.collection('bonafideForms').doc(id).get();
-      if (doc.exists) {
-        students.push({ id: doc.id, ...doc.data() });
-      }
+      if (doc.exists) students.push({ id: doc.id, ...doc.data() });
     }
 
-    if (!students.length) {
+    if (!students.length)
       return res.status(404).send('No valid student records found');
-    }
 
-    // Generate PDFs for each student using your working Puppeteer helper
+    // Generate PDFs for each student
     const pdfBuffers = [];
     for (const student of students) {
-      const pdfBuffer = await generateBonafidePDF(student);
-      pdfBuffers.push(pdfBuffer);
+      const buffer = await generateBonafidePDF(student);
+      pdfBuffers.push(buffer);
     }
 
-    // Merge all PDFs into a single PDF
+    // Merge PDFs using pdf-lib
     const mergedPdf = await PDFDocument.create();
     for (const buf of pdfBuffers) {
       const pdf = await PDFDocument.load(buf);
       const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
       copiedPages.forEach((page) => mergedPdf.addPage(page));
     }
+
     const finalBuffer = await mergedPdf.save();
 
     // Send merged PDF to client
