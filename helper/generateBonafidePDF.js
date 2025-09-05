@@ -17,27 +17,26 @@ async function generateBonafidePDF(formData) {
       throw new Error(`Template file not found at: ${templatePath}`);
     }
 
-    const html = await ejs.renderFile(templatePath, { formData });
+    // Ensure formData has all required properties with defaults
+    const dataWithDefaults = {
+      date: new Date().toISOString().split('T')[0],
+      ...formData,
+    };
+
+    const html = await ejs.renderFile(templatePath, {
+      formData: dataWithDefaults,
+    });
     console.log('EJS template rendered successfully');
 
     const pdfOptions = {
       format: 'A4',
-      orientation: 'portrait',
       border: {
-        top: '20mm',
-        right: '20mm',
-        bottom: '20mm',
-        left: '20mm',
+        top: '15mm',
+        right: '15mm',
+        bottom: '15mm',
+        left: '15mm',
       },
-      quality: '100',
-      timeout: 60000,
-      phantomPath: require('phantomjs-prebuilt').path, // For Render compatibility
-      childProcessOptions: {
-        env: {
-          ...process.env,
-          OPENSSL_CONF: '/dev/null', // Fix for some SSL issues
-        },
-      },
+      phantomPath: require('phantomjs-prebuilt').path,
     };
 
     return new Promise((resolve, reject) => {

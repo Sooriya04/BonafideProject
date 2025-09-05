@@ -3,75 +3,142 @@
   <head>
     <title>Bonafide Certificate</title>
     <style>
+      @page {
+        size: A4;
+        margin: 20mm;
+      }
       body {
-        font-family: serif;
-        width: 80%;
+        font-family: 'Times New Roman', serif;
+        margin: 0;
+        padding: 0;
+        background: white;
+      }
+      .certificate {
+        width: 90%;
         margin: auto;
-        line-height: 1.6;
+        line-height: 1.8; /* more spacing between lines */
+        font-size: 18px;
+        position: relative;
+        box-sizing: border-box;
       }
       .center {
         text-align: center;
       }
-      .right {
-        text-align: right;
+      .row {
+        display: flex;
+        justify-content: space-between;
+        margin: 10px 0;
       }
-      .justify {
-        text-align: justify;
+      h2 {
+        font-size: 20px;
+        font-weight: bold;
+        margin-bottom: 0;
+      }
+      p.center {
+        margin-top: 2px;
+        font-size: 15px;
       }
       .header-line {
-        margin: 20px 0;
         border-top: 2px solid black;
+        margin: 10px 0 20px;
+      }
+      h3 {
+        text-align: center;
+        font-size: 18px;
+        font-weight: bold;
+        margin: 25px 0;
+      }
+      .body-text {
+        text-align: justify;
+        font-size: 19px;
+        margin-top: 30px;
+      }
+      .signature {
+        margin-top: 230px;
+        text-align: right;
+        font-weight: bold;
       }
       .footer-line {
-        margin: 40px 0 10px;
         border-top: 1px solid black;
+        margin-top: 60px;
+      }
+      .footer {
+        text-align: center;
+        font-size: 14px;
+        margin-top: 5px;
+      }
+      .print-btn {
+        display: block;
+        margin: 20px auto;
+        padding: 10px 20px;
+        background: black;
+        color: white;
+        border: none;
+        font-size: 16px;
+        cursor: pointer;
+        border-radius: 6px;
+      }
+      .print-btn:hover {
+        background: #444;
+      }
+      @media print {
+        .print-btn {
+          display: none;
+        }
       }
     </style>
   </head>
   <body>
-    <h2 class="center">THIAGARAJAR COLLEGE OF ENGINEERING, MADURAI - 625015</h2>
-    <p class="center">
-      (A Govt.Aided Autonomous Institution affiliated to Anna University)
-    </p>
+    <div class="certificate">
+      <h3 class="center">
+        THIAGARAJAR COLLEGE OF ENGINEERING, MADURAI - 625015
+      </h3>
+      <p class="center">
+        (A Govt.Aided Autonomous Institution affiliated to Anna University)
+      </p>
 
-    <div class="header-line"></div>
+      <div class="header-line"></div>
 
-    <p>
-      No.D/<%= new Date().getFullYear() %>
-      <span class="right" style="float: right">Date: <%= student.date %></span>
-    </p>
+      <div class="row">
+        <p>No.D/2025</p>
+        <p>Date: <%= formData.date %></p>
+      </div>
 
-    <h3 class="center" style="text-decoration: underline">
-      BONAFIDE CERTIFICATE
-    </h3>
+      <h3>BONAFIDE CERTIFICATE</h3>
 
-    <p class="justify">
-      Certified that <strong><%= student.title %> <%= student.name %></strong>,
-      (Roll No: <strong><%= student.rollno %></strong>)
-      <strong><%= student.relation %> <%= student.parentName %></strong>
-      is a bonafide student of this College studying in
-      <strong
-        ><%= student.year %> Year, <%= student.course %> - <%= student.branch
-        %></strong
-      >
-      during the year
-      <strong
-        ><%= new Date().getFullYear() %>-<%= new Date().getFullYear() + 1
-        %></strong
-      >.
-    </p>
+      <p class="body-text">
+        Certified that
+        <strong><%= formData.title %> <%= formData.name %></strong>, (Roll No:
+        <strong><%= formData.rollno %></strong>)
+        <strong><%= formData.relation %> <%= formData.parentName %></strong>
+        is a bonafide student of this College studying in
+        <strong
+          ><%= formData.year %> Year, <%= formData.course %> - <%=
+          formData.branch %></strong
+        >
+        during the year <strong>2025-2026</strong>.
+      </p>
 
-    <p class="justify">
-      This Certificate is issued to enable him to apply for
-      <strong><%= student.certificateFor %></strong>.
-    </p>
+      <p class="body-text">
+        This Certificate is issued to enable him/her to apply for
+        <strong><%= formData.certificateFor %></strong>
+        <% if (formData.scholarshipType) { %> (<%= formData.scholarshipType %>)
+        <% } %>.
+      </p>
 
-    <p class="right" style="margin-top: 60px">PRINCIPAL</p>
+      <p class="signature">PRINCIPAL</p>
 
-    <div class="footer-line"></div>
-    <p>
-      Ph.No. 0452-2482240-42 &nbsp;&nbsp;&nbsp; Fax No: 0452-2483427
-      &nbsp;&nbsp;&nbsp; Email: tceoffice@tce.edu
-    </p>
+      <div class="footer-line"></div>
+
+      <p class="footer">
+        Ph.No. 0452-2482240-42 &nbsp;&nbsp;&nbsp; Fax No: 0452-2483427
+        &nbsp;&nbsp;&nbsp; Email: tceoffice@tce.edu
+      </p>
+    </div>
+
+    <!-- Print button outside certificate
+    <button class="print-btn" onclick="window.print()">
+      Print Certificate
+    </button> -->
   </body>
 </html>
