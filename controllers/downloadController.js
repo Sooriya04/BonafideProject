@@ -4,22 +4,30 @@ const { PDFDocument } = require('pdf-lib');
 
 // Initialize Firebase Admin if not already done
 if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-    }),
-  });
+  try {
+    admin.initializeApp({
+      credential: admin.credential.cert({
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+      }),
+    });
+    console.log('Firebase Admin initialized successfully');
+  } catch (firebaseError) {
+    console.error('Firebase initialization error:', firebaseError);
+  }
 }
 
 const db = admin.firestore();
 
 exports.downloadBonafide = async (req, res) => {
+  console.log('Download bonafide request received');
+
   try {
     const ids = req.query.ids ? req.query.ids.split(',') : [];
 
     if (!ids.length) {
+      console.log('No IDs provided in request');
       return res.status(400).json({
         success: false,
         error: 'No student IDs provided',
@@ -30,28 +38,25 @@ exports.downloadBonafide = async (req, res) => {
 
     // Fetch student records from Firestore
     const students = [];
-    const batchSize = 5; // Process in batches to avoid memory issues
 
-    for (let i = 0; i < ids.length; i += batchSize) {
-      const batch = ids.slice(i, i + batchSize);
-      const promises = batch.map(async (id) => {
-        try {
-          const doc = await db.collection('bonafideForms').doc(id).get();
-          if (doc.exists) {
-            return { id: doc.id, ...doc.data() };
-          }
-          return null;
-        } catch (error) {
-          console.error(`Error fetching document ${id}:`, error);
-          return null;
+    for (const id of ids) {
+      try {
+        console.log('Fetching document for ID:', id);
+        const doc = await db.collection('bonafideForms').doc(id).get();
+
+        if (doc.exists) {
+          console.log('Document found for ID:', id);
+          students.push({ id: doc.id, ...doc.data() });
+        } else {
+          console.log('Document not found for ID:', id);
         }
-      });
-
-      const results = await Promise.all(promises);
-      students.push(...results.filter((student) => student !== null));
+      } catch (error) {
+        console.error(`Error fetching document ${id}:`, error.message);
+      }
     }
 
     if (!students.length) {
+      console.log('No valid student records found');
       return res.status(404).json({
         success: false,
         error: 'No valid student records found',
@@ -60,74 +65,84 @@ exports.downloadBonafide = async (req, res) => {
 
     console.log(`Found ${students.length} valid student records`);
 
-    // Generate PDFs in batches
+    // Generate PDFs one by one with detailed logging
     const pdfBuffers = [];
 
-    for (let i = 0; i < students.length; i += batchSize) {
-      const batch = students.slice(i, i + batchSize);
-      const batchPromises = batch.map(async (student) => {
-        try {
-          console.log(`Generating PDF for student: ${student.id}`);
-          const buffer = await generateBonafidePDF(student);
-          return buffer;
-        } catch (err) {
-          console.error(`Error generating PDF for student ${student.id}:`, err);
-          return null;
-        }
-      });
-
-      const batchResults = await Promise.all(batchPromises);
-      pdfBuffers.push(...batchResults.filter((buffer) => buffer !== null));
+    for (const student of students) {
+      try {
+        console.log(
+          `Generating PDF for student: ${student.id || student.name}`
+        );
+        const buffer = await generateBonafidePDF(student);
+        pdfBuffers.push(buffer);
+        console.log(
+          `PDF generated successfully for student: ${
+            student.id || student.name
+          }`
+        );
+      } catch (err) {
+        console.error(
+          `Error generating PDF for student ${student.id || student.name}:`,
+          err.message
+        );
+        console.error('Full error:', err);
+      }
     }
 
     if (!pdfBuffers.length) {
+      console.log('All PDF generation attempts failed');
       return res.status(500).json({
         success: false,
-        error: 'Failed to generate any PDFs',
+        error: 'Failed to generate any PDFs. Check server logs for details.',
       });
     }
 
     console.log(`Successfully generated ${pdfBuffers.length} PDFs`);
 
     // Merge PDFs
-    const mergedPdf = await PDFDocument.create();
+    try {
+      const mergedPdf = await PDFDocument.create();
 
-    for (const [index, buf] of pdfBuffers.entries()) {
-      try {
-        const pdf = await PDFDocument.load(buf);
-        const copiedPages = await mergedPdf.copyPages(
-          pdf,
-          pdf.getPageIndices()
-        );
-        copiedPages.forEach((page) => mergedPdf.addPage(page));
-        console.log(`Merged PDF ${index + 1}/${pdfBuffers.length}`);
-      } catch (err) {
-        console.error('Error merging PDF:', err);
+      for (const [index, buf] of pdfBuffers.entries()) {
+        try {
+          const pdf = await PDFDocument.load(buf);
+          const copiedPages = await mergedPdf.copyPages(
+            pdf,
+            pdf.getPageIndices()
+          );
+          copiedPages.forEach((page) => mergedPdf.addPage(page));
+          console.log(`Merged PDF ${index + 1}/${pdfBuffers.length}`);
+        } catch (err) {
+          console.error('Error merging PDF:', err.message);
+        }
       }
+
+      const finalBuffer = await mergedPdf.save();
+
+      // Send response
+      res.setHeader(
+        'Content-Disposition',
+        'inline; filename="bonafide-certificates.pdf"'
+      );
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Length', finalBuffer.length);
+
+      res.send(Buffer.from(finalBuffer));
+      console.log('PDF generation completed successfully');
+    } catch (mergeError) {
+      console.error('Error merging PDFs:', mergeError.message);
+      return res.status(500).json({
+        success: false,
+        error: 'Error merging PDFs',
+      });
     }
-
-    const finalBuffer = await mergedPdf.save();
-
-    // Send response
-    res.setHeader(
-      'Content-Disposition',
-      'inline; filename="bonafide-certificates.pdf"'
-    );
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Length', finalBuffer.length);
-
-    res.send(Buffer.from(finalBuffer));
-
-    console.log('PDF generation completed successfully');
   } catch (err) {
-    console.error('Error in downloadBonafide:', err);
+    console.error('Unexpected error in downloadBonafide:', err.message);
+    console.error('Stack:', err.stack);
     res.status(500).json({
       success: false,
       error: 'Internal server error',
-      message:
-        process.env.NODE_ENV === 'development'
-          ? err.message
-          : 'Something went wrong',
+      message: 'Check server logs for details',
     });
   }
 };
