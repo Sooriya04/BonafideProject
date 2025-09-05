@@ -20,7 +20,6 @@ async function generateBonafidePDF(formData) {
     const html = await ejs.renderFile(templatePath, { formData });
     console.log('EJS template rendered successfully');
 
-    // Create PDF from HTML
     const pdfOptions = {
       format: 'A4',
       orientation: 'portrait',
@@ -32,7 +31,6 @@ async function generateBonafidePDF(formData) {
       },
       quality: '100',
       timeout: 60000,
-      // Additional options for better rendering
       phantomPath: require('phantomjs-prebuilt').path, // For Render compatibility
       childProcessOptions: {
         env: {

@@ -48,6 +48,7 @@
     "pdf-merger-js": "^5.1.2",
     "pdf-to-printer": "^5.6.0",
     "pdfkit": "^0.17.1",
+    "phantomjs-prebuilt": "^2.1.16",
     "pizzip": "^3.2.0",
     "puppeteer": "^24.19.0",
     "tmp": "^0.2.5",
