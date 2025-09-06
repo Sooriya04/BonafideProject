@@ -1,8 +1,7 @@
 const ejs = require('ejs');
-const pdf = require('html-pdf');
 const path = require('path');
 const fs = require('fs');
-const phantomPath = require('phantomjs-prebuilt').path;
+const puppeteer = require('puppeteer');
 
 async function generateBonafidePDF(formData) {
   try {
@@ -13,43 +12,41 @@ async function generateBonafidePDF(formData) {
       throw new Error(`Template file not found at: ${templatePath}`);
     }
 
-    // Normalize fields with sensible defaults
+    // Normalize fields
     const dataWithDefaults = {
-      certificateNo: formData.certificateNo || 'No.D/2025',
-      date: formData.date || new Date().toISOString().split('T')[0],
-      name: formData.name || '---',
-      rollNo: formData.rollNo || '---',
-      fatherName: formData.fatherName || '---',
-      course: formData.course || '---',
-      year: formData.year || '---',
-      academicYear: formData.academicYear || '2025-2026',
-      purpose: formData.purpose || 'Scholarship',
+      date: new Date().toISOString().split('T')[0],
+      title: formData.title,
+      name: formData.name,
+      rollno: formData.rollno,
+      relation: formData.relation,
+      parentName: formData.parentName,
+      year: formData.year,
+      course: formData.course,
+      branch: formData.branch,
+      certificateFor: formData.certificateFor,
+      scholarshipType: formData.scholarshipType || '',
     };
 
     const html = await ejs.renderFile(templatePath, {
       formData: dataWithDefaults,
     });
 
-    const pdfOptions = {
-      format: 'A4',
-      border: {
-        top: '15mm',
-        right: '15mm',
-        bottom: '15mm',
-        left: '15mm',
-      },
-      phantomPath,
-    };
+    // Launch Puppeteer
+    const browser = await puppeteer.launch({ headless: 'new' });
+    const page = await browser.newPage();
 
-    return new Promise((resolve, reject) => {
-      pdf.create(html, pdfOptions).toBuffer((err, buffer) => {
-        if (err) {
-          console.error('Error creating PDF:', err);
-          return reject(err);
-        }
-        resolve(buffer);
-      });
+    // Load HTML into the page
+    await page.setContent(html, { waitUntil: 'networkidle0' });
+
+    // Generate PDF
+    const pdfBuffer = await page.pdf({
+      format: 'A4',
+      margin: { top: '20mm', right: '20mm', bottom: '20mm', left: '20mm' },
+      printBackground: true,
     });
+
+    await browser.close();
+    return pdfBuffer;
   } catch (error) {
     console.error('Error in generateBonafidePDF:', error.message);
     throw error;

@@ -287,12 +287,6 @@
             <td><%= f.branch %></td>
             <td><%= f.year %></td>
             <td><%= f.certificateFor %></td>
-            <td>
-              <span class="status <%= (f.status || '').toLowerCase() %>"
-                ><%= f.status || 'Pending' %></span
-              >
-            </td>
-            <td><%= f.requestDate %></td>
           </tr>
           <% }) %>
         </tbody>
