@@ -13,8 +13,7 @@ async function generateBonafidePDF(formData) {
   const html = await ejs.renderFile(templatePath, { formData });
 
   const pdfOptions = {
-    format: 'A4',
-    border: { top: '20mm', right: '20mm', bottom: '20mm', left: '20mm' },
+    border: { top: '10mm', right: '10mm', bottom: '10mm', left: '10mm' },
   };
 
   return new Promise((resolve, reject) => {

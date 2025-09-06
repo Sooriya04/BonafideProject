@@ -38,7 +38,6 @@ exports.downloadBonafide = async (req, res) => {
         .json({ success: false, error: 'No valid student records found' });
     }
 
-    // Generate PDFs
     const pdfBuffers = [];
     for (const student of students) {
       try {
