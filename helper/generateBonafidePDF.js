@@ -18,10 +18,11 @@ async function generateBonafidePDF(formData) {
       ...formData,
     };
 
+    // Read the template file
+    const template = fs.readFileSync(templatePath, 'utf8');
+
     // Render the EJS template into HTML
-    const html = await ejs.renderFile(templatePath, {
-      formData: dataWithDefaults,
-    });
+    const html = ejs.render(template, { formData: dataWithDefaults });
 
     // PDF options for better formatting
     const pdfOptions = {
@@ -38,6 +39,7 @@ async function generateBonafidePDF(formData) {
       header: {
         height: '10mm',
       },
+      timeout: 30000, // 30 second timeout
     };
 
     // Generate PDF with options
