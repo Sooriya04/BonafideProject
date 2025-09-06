@@ -1,4 +1,3 @@
-// helper/generateBonafidePDF.js
 const ejs = require('ejs');
 const path = require('path');
 const fs = require('fs');
