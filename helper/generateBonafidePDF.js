@@ -1,7 +1,7 @@
 const ejs = require('ejs');
 const path = require('path');
 const fs = require('fs');
-const puppeteer = require('puppeteer');
+const pdf = require('html-pdf-node'); // use html-pdf-node
 
 async function generateBonafidePDF(formData) {
   try {
@@ -12,40 +12,41 @@ async function generateBonafidePDF(formData) {
       throw new Error(`Template file not found at: ${templatePath}`);
     }
 
-    // Normalize fields
+    // Ensure defaults
     const dataWithDefaults = {
       date: new Date().toISOString().split('T')[0],
-      title: formData.title,
-      name: formData.name,
-      rollno: formData.rollno,
-      relation: formData.relation,
-      parentName: formData.parentName,
-      year: formData.year,
-      course: formData.course,
-      branch: formData.branch,
-      certificateFor: formData.certificateFor,
+      title: formData.title || 'Mr.',
+      name: formData.name || '---',
+      rollno: formData.rollno || '---',
+      relation: formData.relation || 'S/o',
+      parentName: formData.parentName || '---',
+      year: formData.year || 'III',
+      course: formData.course || 'B.E',
+      branch: formData.branch || 'Electronics and Communication Engineering',
+      certificateFor: formData.certificateFor || 'Scholarship',
       scholarshipType: formData.scholarshipType || '',
     };
 
+    // Render HTML
     const html = await ejs.renderFile(templatePath, {
       formData: dataWithDefaults,
     });
 
-    // Launch Puppeteer
-    const browser = await puppeteer.launch({ headless: 'new' });
-    const page = await browser.newPage();
-
-    // Load HTML into the page
-    await page.setContent(html, { waitUntil: 'networkidle0' });
+    // Options
+    const options = {
+      format: 'A4',
+      margin: {
+        top: '20mm',
+        right: '20mm',
+        bottom: '20mm',
+        left: '20mm',
+      },
+    };
 
     // Generate PDF
-    const pdfBuffer = await page.pdf({
-      format: 'A4',
-      margin: { top: '20mm', right: '20mm', bottom: '20mm', left: '20mm' },
-      printBackground: true,
-    });
+    const file = { content: html };
+    const pdfBuffer = await pdf.generatePdf(file, options);
 
-    await browser.close();
     return pdfBuffer;
   } catch (error) {
     console.error('Error in generateBonafidePDF:', error.message);
