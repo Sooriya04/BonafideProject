@@ -42,16 +42,30 @@ exports.downloadBonafide = async (req, res) => {
     // Generate PDFs
     const pdfBuffers = [];
     for (const student of students) {
-      const buffer = await generateBonafidePDF(student);
-      pdfBuffers.push(buffer);
+      try {
+        const buffer = await generateBonafidePDF(student);
+        pdfBuffers.push(buffer);
+      } catch (err) {
+        console.error(`PDF generation failed for ${student.id}:`, err.message);
+      }
+    }
+
+    if (!pdfBuffers.length) {
+      return res
+        .status(500)
+        .json({ success: false, error: 'Failed to generate any PDFs' });
     }
 
     // Merge PDFs
     const mergedPdf = await PDFDocument.create();
     for (const buf of pdfBuffers) {
-      const pdf = await PDFDocument.load(buf);
-      const pages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
-      pages.forEach((p) => mergedPdf.addPage(p));
+      try {
+        const pdf = await PDFDocument.load(buf);
+        const pages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+        pages.forEach((p) => mergedPdf.addPage(p));
+      } catch (err) {
+        console.error('Error merging PDF:', err.message);
+      }
     }
     const finalBuffer = await mergedPdf.save();
 
