@@ -8,7 +8,7 @@
         margin: 20mm;
       }
       body {
-        font-family: 'Times New Roman', serif;
+        font-family: 'Times New Roman', Times, serif !important;
         margin: 0;
         padding: 0;
         background: white;
@@ -16,7 +16,7 @@
       .certificate {
         width: 90%;
         margin: auto;
-        line-height: 1.8; /* more spacing between lines */
+        line-height: 1.8;
         font-size: 18px;
         position: relative;
         box-sizing: border-box;
@@ -25,9 +25,15 @@
         text-align: center;
       }
       .row {
-        display: flex;
-        justify-content: space-between;
+        width: 100%;
         margin: 10px 0;
+      }
+      .row p {
+        display: inline-block;
+        width: 48%;
+      }
+      .row p:last-child {
+        text-align: right;
       }
       h2 {
         font-size: 20px;
@@ -50,13 +56,15 @@
       }
       .body-text {
         text-align: justify;
-        font-size: 19px;
-        margin-top: 30px;
+        font-size: 18px;
+        margin-top: 25px;
+        line-height: 1.9;
       }
       .signature {
-        margin-top: 230px;
+        margin-top: 250px;
         text-align: right;
         font-weight: bold;
+        padding-right: 40px;
       }
       .footer-line {
         border-top: 1px solid black;
@@ -66,20 +74,6 @@
         text-align: center;
         font-size: 14px;
         margin-top: 5px;
-      }
-      .print-btn {
-        display: block;
-        margin: 20px auto;
-        padding: 10px 20px;
-        background: black;
-        color: white;
-        border: none;
-        font-size: 16px;
-        cursor: pointer;
-        border-radius: 6px;
-      }
-      .print-btn:hover {
-        background: #444;
       }
       @media print {
         .print-btn {
@@ -135,10 +129,9 @@
         &nbsp;&nbsp;&nbsp; Email: tceoffice@tce.edu
       </p>
     </div>
-
-    <!-- Print button outside certificate
+    <!-- Print button outside certificate -->
     <button class="print-btn" onclick="window.print()">
       Print Certificate
-    </button> -->
+    </button>
   </body>
 </html>

@@ -2,7 +2,6 @@ const admin = require('firebase-admin');
 const generateBonafidePDF = require('../helper/generateBonafidePDF');
 const { PDFDocument } = require('pdf-lib');
 
-// Firebase Admin init
 if (!admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.cert({
