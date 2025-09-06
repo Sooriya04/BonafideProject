@@ -32,6 +32,12 @@ async function generateBonafidePDF(formData) {
         bottom: '0.5in',
         left: '0.5in',
       },
+      footer: {
+        height: '10mm',
+      },
+      header: {
+        height: '10mm',
+      },
     };
 
     // Generate PDF with options
