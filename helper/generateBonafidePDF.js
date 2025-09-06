@@ -11,12 +11,32 @@ async function generateBonafidePDF(formData) {
       throw new Error(`Template file not found at: ${templatePath}`);
     }
 
-    // Render the EJS template into HTML
-    const html = await ejs.renderFile(templatePath, { formData });
+    // Set default values for required fields
+    const dataWithDefaults = {
+      documentNumber: '2025',
+      academicYear: '2025-2026',
+      ...formData,
+    };
 
-    // Generate PDF without custom options
+    // Render the EJS template into HTML
+    const html = await ejs.renderFile(templatePath, {
+      formData: dataWithDefaults,
+    });
+
+    // PDF options for better formatting
+    const pdfOptions = {
+      format: 'A4',
+      border: {
+        top: '0.5in',
+        right: '0.5in',
+        bottom: '0.5in',
+        left: '0.5in',
+      },
+    };
+
+    // Generate PDF with options
     return new Promise((resolve, reject) => {
-      pdf.create(html).toBuffer((err, buffer) => {
+      pdf.create(html, pdfOptions).toBuffer((err, buffer) => {
         if (err) return reject(err);
         resolve(buffer);
       });
