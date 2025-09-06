@@ -2,31 +2,33 @@ const ejs = require('ejs');
 const pdf = require('html-pdf');
 const path = require('path');
 const fs = require('fs');
+const phantomPath = require('phantomjs-prebuilt').path;
 
 async function generateBonafidePDF(formData) {
   try {
-    console.log(
-      'Starting PDF generation for student:',
-      formData.id || formData.name
-    );
+    console.log('Generating Bonafide PDF for:', formData.name || formData.id);
 
     const templatePath = path.join(__dirname, '../views/bonafideTemplate.ejs');
-    console.log('Template path:', templatePath);
-
     if (!fs.existsSync(templatePath)) {
       throw new Error(`Template file not found at: ${templatePath}`);
     }
 
-    // Ensure formData has all required properties with defaults
+    // Normalize fields with sensible defaults
     const dataWithDefaults = {
-      date: new Date().toISOString().split('T')[0],
-      ...formData,
+      certificateNo: formData.certificateNo || 'No.D/2025',
+      date: formData.date || new Date().toISOString().split('T')[0],
+      name: formData.name || '---',
+      rollNo: formData.rollNo || '---',
+      fatherName: formData.fatherName || '---',
+      course: formData.course || '---',
+      year: formData.year || '---',
+      academicYear: formData.academicYear || '2025-2026',
+      purpose: formData.purpose || 'Scholarship',
     };
 
     const html = await ejs.renderFile(templatePath, {
       formData: dataWithDefaults,
     });
-    console.log('EJS template rendered successfully');
 
     const pdfOptions = {
       format: 'A4',
@@ -36,22 +38,16 @@ async function generateBonafidePDF(formData) {
         bottom: '15mm',
         left: '15mm',
       },
-      phantomPath: require('phantomjs-prebuilt').path,
+      phantomPath,
     };
 
     return new Promise((resolve, reject) => {
       pdf.create(html, pdfOptions).toBuffer((err, buffer) => {
         if (err) {
           console.error('Error creating PDF:', err);
-          reject(err);
-        } else {
-          console.log(
-            'PDF generated successfully, size:',
-            buffer.length,
-            'bytes'
-          );
-          resolve(buffer);
+          return reject(err);
         }
+        resolve(buffer);
       });
     });
   } catch (error) {
