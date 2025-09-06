@@ -18,9 +18,9 @@
 
       .certificate-container {
         width: 210mm;
-        min-height: 277mm; /* reduce from 297mm to allow padding */
+        min-height: 297mm;
         margin: 0 auto;
-        padding: 15mm 20mm; /* reduce vertical padding */
+        padding: 20mm;
         box-sizing: border-box;
         position: relative;
       }
@@ -48,24 +48,19 @@
       }
 
       .document-info {
-        display: grid;
-        grid-template-columns: 1fr 1fr; /* two equal columns */
-        align-items: center;
+        display: flex;
+        justify-content: space-between;
+        align-items: center; /* vertically center if needed */
         margin: 10px 0;
         width: 100%;
-        font-size: 16pt;
       }
 
       .document-info-left {
         text-align: left;
-        white-space: nowrap; /* prevent wrapping */
       }
 
       .document-info-right {
         text-align: right;
-        white-space: nowrap; /* prevent wrapping */
-        position: relative;
-        left: 60%;
       }
 
       .document-title {
@@ -76,16 +71,15 @@
       }
 
       .body-text {
-        font-size: 18pt;
-        font-weight: 600;
+        font-size: 19pt;
         text-align: left;
-        line-height: 1.8; /* reduce from 1.8 */
-        margin-bottom: 8mm; /* reduce bottom spacing */
+        line-height: 1.8;
+        margin-bottom: 10mm;
         word-spacing: 2pt;
       }
 
       .signature {
-        margin-top: 90mm; /* was 90mm, now fits on one page */
+        margin-top: 70mm;
         text-align: right;
         font-weight: bold;
         font-size: 16pt;
