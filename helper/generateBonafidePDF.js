@@ -1,7 +1,7 @@
 const ejs = require('ejs');
 const path = require('path');
 const fs = require('fs');
-const pdf = require('html-pdf-node'); // use html-pdf-node
+const pdf = require('html-pdf-node');
 
 async function generateBonafidePDF(formData) {
   try {
@@ -12,27 +12,10 @@ async function generateBonafidePDF(formData) {
       throw new Error(`Template file not found at: ${templatePath}`);
     }
 
-    // Ensure defaults
-    const dataWithDefaults = {
-      date: new Date().toISOString().split('T')[0],
-      title: formData.title || 'Mr.',
-      name: formData.name || '---',
-      rollno: formData.rollno || '---',
-      relation: formData.relation || 'S/o',
-      parentName: formData.parentName || '---',
-      year: formData.year || 'III',
-      course: formData.course || 'B.E',
-      branch: formData.branch || 'Electronics and Communication Engineering',
-      certificateFor: formData.certificateFor || 'Scholarship',
-      scholarshipType: formData.scholarshipType || '',
-    };
+    // Render the HTML with only the provided formData (no defaults)
+    const html = await ejs.renderFile(templatePath, { formData });
 
-    // Render HTML
-    const html = await ejs.renderFile(templatePath, {
-      formData: dataWithDefaults,
-    });
-
-    // Options
+    const file = { content: html };
     const options = {
       format: 'A4',
       margin: {
@@ -43,10 +26,7 @@ async function generateBonafidePDF(formData) {
       },
     };
 
-    // Generate PDF
-    const file = { content: html };
     const pdfBuffer = await pdf.generatePdf(file, options);
-
     return pdfBuffer;
   } catch (error) {
     console.error('Error in generateBonafidePDF:', error.message);
