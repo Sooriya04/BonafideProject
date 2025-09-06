@@ -54,7 +54,6 @@ exports.downloadBonafide = async (req, res) => {
         .json({ success: false, error: 'Failed to generate any PDFs' });
     }
 
-    // Merge PDFs
     const mergedPdf = await PDFDocument.create();
     for (const buf of pdfBuffers) {
       try {
