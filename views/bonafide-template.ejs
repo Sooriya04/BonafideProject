@@ -6,102 +6,113 @@
       body {
         font-family: 'Times New Roman', Times, serif !important;
         margin: 0;
-        padding: 0;
+        padding: 20px;
         background: white;
+        line-height: 1.5;
       }
-      .certificate {
-        width: 90%;
-        margin: auto;
-        line-height: 1.8;
-        font-size: 18px;
-        position: relative;
-        box-sizing: border-box;
-      }
-      .center {
-        text-align: center;
-      }
-      .row {
+      .certificate-container {
         width: 100%;
-        margin: 10px 0;
+        max-width: 800px;
+        margin: 0 auto;
+        position: relative;
       }
-      .row p {
-        display: inline-block;
-        width: 48%;
+      .letterhead {
+        text-align: center;
+        margin-bottom: 10px;
       }
-      .row p:last-child {
-        text-align: right;
-      }
-      h2 {
+      .institution-name {
         font-size: 20px;
         font-weight: bold;
         margin-bottom: 0;
       }
-      p.center {
-        margin-top: 2px;
+      .institution-details {
         font-size: 15px;
+        margin-top: 0;
       }
       .header-line {
         border-top: 2px solid black;
         margin: 10px 0 20px;
       }
-      h3 {
+      .document-info {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 30px;
+      }
+      .document-title {
         text-align: center;
         font-size: 18px;
         font-weight: bold;
+        text-decoration: underline;
         margin: 25px 0;
       }
       .body-text {
-        text-align: justify;
         font-size: 18px;
-        margin-top: 25px;
-        line-height: 1.9;
+        text-align: justify;
+        line-height: 2;
+        margin-bottom: 20px;
       }
       .signature {
-        margin-top: 250px;
+        margin-top: 100px;
         text-align: right;
         font-weight: bold;
-        padding-right: 40px;
+        padding-right: 50px;
       }
       .footer-line {
         border-top: 1px solid black;
-        margin-top: 60px;
+        margin-top: 120px;
       }
       .footer {
         text-align: center;
         font-size: 14px;
         margin-top: 5px;
       }
+      .print-btn {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        padding: 10px 20px;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
       @media print {
         .print-btn {
           display: none;
+        }
+        body {
+          padding: 0;
         }
       }
     </style>
   </head>
   <body>
-    <div class="certificate">
-      <h3 class="center">
-        THIAGARAJAR COLLEGE OF ENGINEERING, MADURAI - 625015
-      </h3>
-      <p class="center">
-        (A Govt.Aided Autonomous Institution affiliated to Anna University)
-      </p>
+    <div class="certificate-container">
+      <div class="letterhead">
+        <h2 class="institution-name">
+          THIAGARAJAR COLLEGE OF ENGINEERING, MADURAI - 625015
+        </h2>
+        <p class="institution-details">
+          (A Govt.Aided Autonomous Institution affiliated to Anna University)
+        </p>
+      </div>
 
       <div class="header-line"></div>
 
-      <div class="row">
-        <p>No.D/2025</p>
-        <p>Date: <%= formData.date %></p>
+      <div class="document-info">
+        <span>No.D/2025</span>
+        <span>Date: <%= formData.date %></span>
       </div>
 
-      <h3>BONAFIDE CERTIFICATE</h3>
+      <h3 class="document-title">BONAFIDE CERTIFICATE</h3>
 
       <p class="body-text">
         Certified that
         <strong><%= formData.title %> <%= formData.name %></strong>, (Roll No:
         <strong><%= formData.rollno %></strong>)
-        <strong><%= formData.relation %> <%= formData.parentName %></strong>
-        is a bonafide student of this College studying in
+        <strong><%= formData.relation %> <%= formData.parentName %></strong> is
+        a bonafide student of this College studying in
         <strong
           ><%= formData.year %> Year, <%= formData.course %> - <%=
           formData.branch %></strong
@@ -116,7 +127,7 @@
         <% } %>.
       </p>
 
-      <p class="signature">PRINCIPAL</p>
+      <div class="signature">PRINCIPAL</div>
 
       <div class="footer-line"></div>
 
@@ -125,7 +136,7 @@
         &nbsp;&nbsp;&nbsp; Email: tceoffice@tce.edu
       </p>
     </div>
-    <!-- Print button outside certificate -->
+
     <button class="print-btn" onclick="window.print()">
       Print Certificate
     </button>
