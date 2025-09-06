@@ -1,23 +1,31 @@
-const puppeteer = require('puppeteer');
+// helper/generateBonafidePDF.js
 const ejs = require('ejs');
 const path = require('path');
+const fs = require('fs');
+const pdf = require('html-pdf');
 
 async function generateBonafidePDF(formData) {
-  const templatePath = path.join(__dirname, '../views/bonafideTemplate.ejs');
-  const html = await ejs.renderFile(templatePath, { formData });
+  try {
+    const templatePath = path.join(__dirname, '../views/bonafideTemplate.ejs');
 
-  const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
-  const page = await browser.newPage();
-  await page.setContent(html, { waitUntil: 'networkidle0' });
+    if (!fs.existsSync(templatePath)) {
+      throw new Error(`Template file not found at: ${templatePath}`);
+    }
 
-  const pdfBuffer = await page.pdf({
-    format: 'A4',
-    margin: { top: '15mm', right: '15mm', bottom: '15mm', left: '15mm' },
-    printBackground: true,
-  });
+    // Render the EJS template into HTML
+    const html = await ejs.renderFile(templatePath, { formData });
 
-  await browser.close();
-  return pdfBuffer;
+    // Generate PDF without custom options
+    return new Promise((resolve, reject) => {
+      pdf.create(html).toBuffer((err, buffer) => {
+        if (err) return reject(err);
+        resolve(buffer);
+      });
+    });
+  } catch (error) {
+    console.error('Error generating Bonafide PDF:', error);
+    throw error;
+  }
 }
 
 module.exports = generateBonafidePDF;
