@@ -1,58 +1,27 @@
 const ejs = require('ejs');
+const puppeteer = require('puppeteer');
 const path = require('path');
-const fs = require('fs');
-const pdf = require('html-pdf');
 
 async function generateBonafidePDF(formData) {
-  try {
-    const templatePath = path.join(__dirname, '../views/bonafideTemplate.ejs');
+  const templatePath = path.join(__dirname, '../views/bonafideTemplate.ejs');
+  const html = await ejs.renderFile(templatePath, { formData });
 
-    if (!fs.existsSync(templatePath)) {
-      throw new Error(`Template file not found at: ${templatePath}`);
-    }
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+  });
 
-    // Set default values for required fields
-    const dataWithDefaults = {
-      documentNumber: '2025',
-      academicYear: '2025-2026',
-      ...formData,
-    };
+  const page = await browser.newPage();
+  await page.setContent(html, { waitUntil: 'networkidle0' });
 
-    // Read the template file
-    const template = fs.readFileSync(templatePath, 'utf8');
+  const buffer = await page.pdf({
+    format: 'A4',
+    printBackground: true,
+    margin: { top: '20mm', right: '20mm', bottom: '20mm', left: '20mm' },
+  });
 
-    // Render the EJS template into HTML
-    const html = ejs.render(template, { formData: dataWithDefaults });
-
-    // PDF options for better formatting
-    const pdfOptions = {
-      format: 'A4',
-      border: {
-        top: '0.5in',
-        right: '0.5in',
-        bottom: '0.5in',
-        left: '0.5in',
-      },
-      footer: {
-        height: '10mm',
-      },
-      header: {
-        height: '10mm',
-      },
-      timeout: 30000, // 30 second timeout
-    };
-
-    // Generate PDF with options
-    return new Promise((resolve, reject) => {
-      pdf.create(html, pdfOptions).toBuffer((err, buffer) => {
-        if (err) return reject(err);
-        resolve(buffer);
-      });
-    });
-  } catch (error) {
-    console.error('Error generating Bonafide PDF:', error);
-    throw error;
-  }
+  await browser.close();
+  return buffer;
 }
 
 module.exports = generateBonafidePDF;

@@ -1,6 +1,5 @@
 const generateBonafidePDF = require('./helper/generateBonafidePDF');
 const fs = require('fs');
-// Example of how to use the function
 const formData = {
   title: 'Ms.',
   name: 'Janani',
@@ -18,7 +17,7 @@ const formData = {
 generateBonafidePDF(formData)
   .then((pdfBuffer) => {
     // Save the PDF or send it as response
-    fs.writeFileSync('bonafide_certificate.pdf', pdfBuffer);
+    fs.writeFileSync(`${formData.rollno}bonafide_certificate.pdf`, pdfBuffer);
   })
   .catch((error) => {
     console.error('Failed to generate PDF:', error);

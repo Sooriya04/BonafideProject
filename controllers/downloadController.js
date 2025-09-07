@@ -1,80 +1,59 @@
 const admin = require('firebase-admin');
-const generateBonafidePDF = require('../helper/generateBonafidePDF');
-const { PDFDocument } = require('pdf-lib');
-
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-    }),
-  });
-  console.log('Firebase Admin initialized');
-}
+const ejs = require('ejs');
+const puppeteer = require('puppeteer');
+const path = require('path');
 
 const db = admin.firestore();
 
 exports.downloadBonafide = async (req, res) => {
   try {
     const ids = req.query.ids ? req.query.ids.split(',') : [];
-    if (!ids.length) {
-      return res
-        .status(400)
-        .json({ success: false, error: 'No student IDs provided' });
+    if (ids.length === 0) {
+      return res.status(400).send('No student IDs provided');
     }
 
     const students = [];
     for (const id of ids) {
       const doc = await db.collection('bonafideForms').doc(id).get();
-      if (doc.exists) {
-        students.push({ id: doc.id, ...doc.data() });
-      }
+      if (doc.exists) students.push({ id: doc.id, ...doc.data() });
+    }
+    if (students.length === 0) {
+      return res.status(404).send('No valid student records found');
     }
 
-    if (!students.length) {
-      return res
-        .status(404)
-        .json({ success: false, error: 'No valid student records found' });
+    // Render HTML
+    const templatePath = path.join(__dirname, '../views/bonafideTemplate.ejs');
+    let allHtml = '';
+    for (const s of students) {
+      const certHtml = await ejs.renderFile(templatePath, { formData: s });
+      allHtml += `<div style="page-break-after: always;">${certHtml}</div>`;
     }
 
-    const pdfBuffers = [];
-    for (const student of students) {
-      try {
-        const buffer = await generateBonafidePDF(student);
-        pdfBuffers.push(buffer);
-      } catch (err) {
-        console.error(`PDF generation failed for ${student.id}:`, err.message);
-      }
-    }
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    });
 
-    if (!pdfBuffers.length) {
-      return res
-        .status(500)
-        .json({ success: false, error: 'Failed to generate any PDFs' });
-    }
+    const page = await browser.newPage();
+    await page.setContent(allHtml, { waitUntil: 'networkidle0' });
 
-    const mergedPdf = await PDFDocument.create();
-    for (const buf of pdfBuffers) {
-      try {
-        const pdf = await PDFDocument.load(buf);
-        const pages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
-        pages.forEach((p) => mergedPdf.addPage(p));
-      } catch (err) {
-        console.error('Error merging PDF:', err.message);
-      }
-    }
-    const finalBuffer = await mergedPdf.save();
+    const buffer = await page.pdf({
+      format: 'A4',
+      printBackground: true,
+      margin: { top: '20mm', right: '20mm', bottom: '20mm', left: '20mm' },
+    });
 
-    // Send as response
+    await browser.close();
+
+    // Send PDF
     res.setHeader(
       'Content-Disposition',
-      'inline; filename="bonafide-certificates.pdf"'
+      'inline; filename=bonafide-multiple.pdf'
     );
     res.setHeader('Content-Type', 'application/pdf');
-    res.send(Buffer.from(finalBuffer));
+    res.send(buffer);
   } catch (err) {
-    console.error('Error in downloadBonafide:', err.message);
-    res.status(500).json({ success: false, error: 'Internal server error' });
+    console.error('Error generating multiple PDFs:', err);
+    res.status(500).send('Error generating PDFs: ' + err.message);
   }
 };

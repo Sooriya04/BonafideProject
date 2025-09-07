@@ -18,9 +18,6 @@ const {
 const { getAuth } = require('firebase-admin/auth');
 const { db } = require('../config/firebase');
 
-const crypto = require('crypto');
-const bcrypt = require('bcrypt');
-
 // =====================
 // Render Pages
 // =====================
@@ -147,9 +144,6 @@ const verify = async (req, res) => {
   }
 };
 
-// =====================
-// Login
-// =====================
 const login = async (req, res) => {
   const { email, password } = req.body || {};
 
@@ -161,14 +155,6 @@ const login = async (req, res) => {
   }
 
   try {
-    if (
-      email === process.env.ADMIN_EMAIL &&
-      password === process.env.ADMIN_PASSWORD
-    ) {
-      req.session.user = { email, role: 'admin' };
-      return res.redirect('/admin');
-    }
-
     const userDoc = await findUserByEmail(email);
 
     if (!userDoc) {

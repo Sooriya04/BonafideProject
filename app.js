@@ -35,6 +35,9 @@ app.use('/', adminRoutes);
 const oauth2Route = require('./routes/oauth2Routes');
 app.use('/', oauth2Route);
 
+const adminAuthRoutes = require('./routes/adminAuthRoutes');
+app.use('/auth', adminAuthRoutes);
+
 const adminRouter = require('./routes/adminSettings');
 app.use('/admin', adminRouter);
 
