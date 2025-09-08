@@ -32,7 +32,7 @@ exports.postForm = (req, res) => {
       certificateFor: req.body.certificateFor,
       scholarshipType: req.body.scholarshipType || '',
       date: req.body.date,
-      academicYear, // ✅ dynamic academic year
+      academicYear,
     };
 
     req.session.bonafideData = formData;
