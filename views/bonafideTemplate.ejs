@@ -16,8 +16,8 @@
       .certificate {
         width: 95%;
         margin: auto;
-        line-height: 1.3; /* slightly tighter */
-        font-size: 14px; /* smaller to fit one page */
+        line-height: 1.5;
+        font-size: 14px;
         box-sizing: border-box;
       }
       .center {
@@ -26,25 +26,16 @@
       .row {
         display: flex;
         justify-content: space-between;
-        margin: 5px 0;
-        font-size: 13px;
-      }
-      p.center {
-        margin-top: 2px;
+        margin: 10px 0 5px 0;
         font-size: 13px;
       }
       .header-line {
         border-top: 2px solid black;
-        margin: 6px 0 10px;
+        margin: 5px 0 10px 0;
       }
-      h3.center:first-of-type {
-        white-space: nowrap;
+      h3.center {
         font-size: 16px;
-        margin: 0 auto 4px auto;
-      }
-      h3.center:last-of-type {
-        font-size: 16px;
-        margin: 12px 0;
+        margin: 0;
       }
       .body-text {
         text-align: justify;
@@ -52,10 +43,10 @@
         margin-top: 10px;
       }
       .signature {
-        margin-top: 180px;
+        margin-top: 120px;
         text-align: right;
         font-weight: bold;
-        font-size: 18px;
+        font-size: 16px;
       }
       .footer-line {
         border-top: 1px solid black;
@@ -107,7 +98,7 @@
         This Certificate is issued to enable him/her to apply for
         <strong><%= String(formData.certificateFor) %></strong>
         <% if (formData.scholarshipType) { %> (<%=
-        String(formData.scholarshipType) %>) <% } %>.
+        String(formData.scholarshipType) %>) <% } %>
       </p>
 
       <p class="signature">PRINCIPAL</p>
