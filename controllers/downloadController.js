@@ -18,33 +18,27 @@ exports.downloadBonafide = async (req, res) => {
       const doc = await db.collection('bonafideForms').doc(id).get();
       if (doc.exists) students.push({ id: doc.id, ...doc.data() });
     }
-
     if (students.length === 0)
       return res.status(404).send('No valid student records found');
 
-    // Render HTML for all students
     let allHtml = '';
     for (const s of students) {
       const certHtml = await ejs.renderFile(templatePath, { formData: s });
       allHtml += `<div style="page-break-after: always;">${certHtml}</div>`;
     }
 
-    // Generate PDF using wkhtmltopdf installer
     const file = { content: allHtml };
     const options = {
       format: 'A4',
       margin: { top: '20mm', bottom: '20mm', left: '20mm', right: '20mm' },
       printBackground: true,
-      executablePath: wkhtmltopdfInstaller.path, // THIS ensures Render works
+      executablePath: wkhtmltopdfInstaller.path, // crucial: forces wkhtmltopdf
     };
 
     const pdfBuffer = await htmlPdf.generatePdf(file, options);
 
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader(
-      'Content-Disposition',
-      'inline; filename=bonafide-multiple.pdf'
-    );
+    res.setHeader('Content-Disposition', 'inline; filename=bonafide.pdf');
     res.send(pdfBuffer);
   } catch (err) {
     console.error('PDF generation error:', err);
