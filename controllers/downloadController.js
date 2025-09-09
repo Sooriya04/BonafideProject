@@ -1,9 +1,11 @@
 const admin = require('firebase-admin');
 const ejs = require('ejs');
-const puppeteer = require('puppeteer');
 const path = require('path');
+const wkhtmltopdf = require('wkhtmltopdf');
+const { promisify } = require('util');
 
 const db = admin.firestore();
+const wkhtmltopdfAsync = promisify(wkhtmltopdf);
 
 exports.downloadBonafide = async (req, res) => {
   try {
@@ -21,31 +23,35 @@ exports.downloadBonafide = async (req, res) => {
       return res.status(404).send('No valid student records found');
     }
 
-    // Render HTML
     const templatePath = path.join(__dirname, '../views/bonafideTemplate.ejs');
-    let allHtml = '';
+    let allHtml = `
+      <html>
+        <head>
+          <style>
+            @page { size: A4; margin: 20mm; }
+            .page { page-break-after: always; }
+            .page:last-child { page-break-after: auto; }
+          </style>
+        </head>
+        <body>
+    `;
+
     for (const s of students) {
       const certHtml = await ejs.renderFile(templatePath, { formData: s });
-      allHtml += `<div style="page-break-after: always;">${certHtml}</div>`;
+      allHtml += `<div class="page">${certHtml}</div>`;
     }
 
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    allHtml += `</body></html>`;
+
+    const buffer = await wkhtmltopdfAsync(allHtml, {
+      pageSize: 'A4',
+      marginTop: '20mm',
+      marginRight: '20mm',
+      marginBottom: '20mm',
+      marginLeft: '20mm',
+      printMediaType: true,
     });
 
-    const page = await browser.newPage();
-    await page.setContent(allHtml, { waitUntil: 'networkidle0' });
-
-    const buffer = await page.pdf({
-      format: 'A4',
-      printBackground: true,
-      margin: { top: '20mm', right: '20mm', bottom: '20mm', left: '20mm' },
-    });
-
-    await browser.close();
-
-    // Send PDF
     res.setHeader(
       'Content-Disposition',
       'inline; filename=bonafide-multiple.pdf'
