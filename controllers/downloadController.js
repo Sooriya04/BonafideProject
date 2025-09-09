@@ -2,10 +2,9 @@ const admin = require('firebase-admin');
 const ejs = require('ejs');
 const path = require('path');
 const wkhtmltopdf = require('wkhtmltopdf');
-const { promisify } = require('util');
+const { Readable } = require('stream');
 
 const db = admin.firestore();
-const wkhtmltopdfAsync = promisify(wkhtmltopdf);
 
 exports.downloadBonafide = async (req, res) => {
   try {
@@ -43,21 +42,20 @@ exports.downloadBonafide = async (req, res) => {
 
     allHtml += `</body></html>`;
 
-    const buffer = await wkhtmltopdfAsync(allHtml, {
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader(
+      'Content-Disposition',
+      'inline; filename=bonafide-multiple.pdf'
+    );
+
+    wkhtmltopdf(allHtml, {
       pageSize: 'A4',
       marginTop: '20mm',
       marginRight: '20mm',
       marginBottom: '20mm',
       marginLeft: '20mm',
       printMediaType: true,
-    });
-
-    res.setHeader(
-      'Content-Disposition',
-      'inline; filename=bonafide-multiple.pdf'
-    );
-    res.setHeader('Content-Type', 'application/pdf');
-    res.send(buffer);
+    }).pipe(res);
   } catch (err) {
     console.error('Error generating multiple PDFs:', err);
     res.status(500).send('Error generating PDFs: ' + err.message);
