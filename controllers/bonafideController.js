@@ -43,20 +43,25 @@ exports.confirmForm = async (req, res) => {
 
   try {
     const now = new Date();
-    finalData.academicYear = `${now.getFullYear()}-${now.getFullYear() + 1}`;
+    const currentYear = now.getFullYear();
+    const nextYear = currentYear + 1;
+    finalData.academicYear = `${currentYear}-${nextYear}`;
 
+    // Save form data to Firestore
     await db.collection('bonafideForms').add({
       ...finalData,
       createdAt: new Date(),
     });
+
+    // Generate PDF buffer
     const buffer = await generateBonafidePDF(finalData);
 
+    // Upload to Google Drive
     const folderName = now.toLocaleString('en-US', {
       month: 'long',
       year: 'numeric',
     });
     const folderId = await createFolderIfNotExists(folderName);
-
     const fileName = `${String(now.getDate()).padStart(2, '0')}-${String(
       now.getMonth() + 1
     ).padStart(2, '0')}-${now.getFullYear()}-bonafide-certificate-${
@@ -70,6 +75,6 @@ exports.confirmForm = async (req, res) => {
     res.render('success', { name: finalData.name });
   } catch (err) {
     console.error('Error saving form or generating PDF:', err);
-    res.status(500).send('Error saving form data or generating PDF.');
+    res.status(500).send('Error saving form or generating PDF.');
   }
 };
