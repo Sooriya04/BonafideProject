@@ -52,6 +52,8 @@
     "phantomjs-prebuilt": "^2.1.16",
     "pizzip": "^3.2.0",
     "puppeteer": "^24.19.0",
+    "stream-buffer": "^1.0.0",
+    "stream-buffers": "^3.0.3",
     "tmp": "^0.2.5",
     "util": "^0.12.5",
     "uuid": "^11.1.0",

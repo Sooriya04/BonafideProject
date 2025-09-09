@@ -1,31 +1,29 @@
 const ejs = require('ejs');
 const path = require('path');
-const htmlPdf = require('html-pdf-node');
-const wkhtmltopdfInstaller = require('wkhtmltopdf-installer');
+const wkhtmltopdf = require('wkhtmltopdf');
+const { PassThrough } = require('stream');
 
 async function generateBonafidePDF(formData) {
   try {
     const templatePath = path.join(__dirname, '../views/bonafideTemplate.ejs');
-
-    // Render EJS template to HTML string
     const html = await ejs.renderFile(templatePath, { formData });
 
-    // Make sure HTML is not empty
-    if (!html || html.trim().length === 0) {
-      throw new Error('Generated HTML is empty');
-    }
+    // Generate PDF buffer using wkhtmltopdf
+    return new Promise((resolve, reject) => {
+      const chunks = [];
+      const stream = wkhtmltopdf(html, {
+        pageSize: 'A4',
+        marginTop: '20mm',
+        marginBottom: '20mm',
+        marginLeft: '20mm',
+        marginRight: '20mm',
+        printMediaType: true,
+      });
 
-    const file = { content: html };
-    const options = {
-      format: 'A4',
-      margin: { top: '20mm', bottom: '20mm', left: '20mm', right: '20mm' },
-      printBackground: true,
-      executablePath: wkhtmltopdfInstaller.path, // ensures wkhtmltopdf binary
-    };
-
-    const pdfBuffer = await htmlPdf.generatePdf(file, options);
-
-    return pdfBuffer;
+      stream.on('data', (chunk) => chunks.push(chunk));
+      stream.on('end', () => resolve(Buffer.concat(chunks)));
+      stream.on('error', (err) => reject(err));
+    });
   } catch (err) {
     console.error('PDF generation error in generateBonafidePDF:', err);
     throw err;

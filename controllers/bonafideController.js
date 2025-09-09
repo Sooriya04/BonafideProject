@@ -47,16 +47,16 @@ exports.confirmForm = async (req, res) => {
     const nextYear = currentYear + 1;
     finalData.academicYear = `${currentYear}-${nextYear}`;
 
-    // Save form data to Firestore
+    // Save form data
     await db.collection('bonafideForms').add({
       ...finalData,
       createdAt: new Date(),
     });
 
-    // Generate PDF buffer
-    const buffer = await generateBonafidePDF(finalData);
+    // Generate PDF buffer without Chromium
+    const pdfBuffer = await generateBonafidePDF(finalData);
 
-    // Upload to Google Drive
+    // Upload PDF to Google Drive
     const folderName = now.toLocaleString('en-US', {
       month: 'long',
       year: 'numeric',
@@ -64,12 +64,12 @@ exports.confirmForm = async (req, res) => {
     const folderId = await createFolderIfNotExists(folderName);
     const fileName = `${String(now.getDate()).padStart(2, '0')}-${String(
       now.getMonth() + 1
-    ).padStart(2, '0')}-${now.getFullYear()}-bonafide-certificate-${
-      finalData.rollno
-    }.pdf`;
+    ).padStart(2, '0')}-${now.getFullYear()}-bonafide-${finalData.rollno}.pdf`;
 
-    await uploadFile(buffer, fileName, folderId);
-    await sendBonafideNotification(finalData, buffer, fileName);
+    await uploadFile(pdfBuffer, fileName, folderId);
+
+    // Send notification
+    await sendBonafideNotification(finalData, pdfBuffer, fileName);
 
     req.session.bonafideData = null;
     res.render('success', { name: finalData.name });
