@@ -1,12 +1,12 @@
 const { db } = require('../config/firebase');
-const {
-  sendBonafideNotification,
-} = require('../helper/sendBonafideNotification');
 const generateBonafidePDF = require('../helper/generateBonafidePDF');
 const {
   createFolderIfNotExists,
   uploadFile,
 } = require('../helper/uploadToDrive');
+const {
+  sendBonafideNotification,
+} = require('../helper/sendBonafideNotification');
 
 exports.getForm = (req, res) => {
   const formData = req.session.bonafideData || {};
@@ -14,33 +14,27 @@ exports.getForm = (req, res) => {
 };
 
 exports.postForm = (req, res) => {
-  try {
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const nextYear = currentYear + 1;
-    const academicYear = `${currentYear}-${nextYear}`;
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const nextYear = currentYear + 1;
 
-    const formData = {
-      title: req.body.title,
-      name: req.body.name,
-      rollno: req.body.rollno,
-      relation: req.body.relation,
-      parentName: req.body.parentName,
-      year: req.body.year,
-      course: req.body.course,
-      branch: req.body.branch,
-      certificateFor: req.body.certificateFor,
-      scholarshipType: req.body.scholarshipType || '',
-      date: req.body.date,
-      academicYear,
-    };
+  const formData = {
+    title: req.body.title.toUpperCase(),
+    name: req.body.name,
+    rollno: req.body.rollno,
+    relation: req.body.relation,
+    parentName: req.body.parentName.toUpperCase(),
+    year: req.body.year,
+    course: req.body.course,
+    branch: req.body.branch,
+    certificateFor: req.body.certificateFor,
+    scholarshipType: req.body.scholarshipType || '',
+    date: req.body.date,
+    academicYear: `${currentYear}-${nextYear}`,
+  };
 
-    req.session.bonafideData = formData;
-    res.render('preview', { formData });
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('Error processing form');
-  }
+  req.session.bonafideData = formData;
+  res.render('preview', { formData });
 };
 
 exports.confirmForm = async (req, res) => {
@@ -48,7 +42,6 @@ exports.confirmForm = async (req, res) => {
   if (!finalData) return res.redirect('/bonafide');
 
   try {
-    // ✅ recompute academic year to be safe
     const now = new Date();
     const currentYear = now.getFullYear();
     const nextYear = currentYear + 1;
@@ -67,20 +60,19 @@ exports.confirmForm = async (req, res) => {
     });
     const folderId = await createFolderIfNotExists(folderName);
 
-    const day = String(now.getDate()).padStart(2, '0');
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const year = now.getFullYear();
-    const fileName = `${day}-${month}-${year}-bonafide-certificate-${finalData.rollno}.pdf`;
+    const fileName = `${String(now.getDate()).padStart(2, '0')}-${String(
+      now.getMonth() + 1
+    ).padStart(2, '0')}-${now.getFullYear()}-bonafide-certificate-${
+      finalData.rollno
+    }.pdf`;
 
-    const uploadedFile = await uploadFile(buffer, fileName, folderId);
-    console.log('Bonafide PDF uploaded to Drive:', uploadedFile);
-
+    await uploadFile(buffer, fileName, folderId);
     await sendBonafideNotification(finalData, buffer, fileName);
 
     req.session.bonafideData = null;
     res.render('success', { name: finalData.name });
   } catch (err) {
     console.error('Error saving form or uploading PDF:', err);
-    res.status(500).send('Error saving form data or uploading PDF.');
+    res.status(500).send('Error saving form data or generating PDF.');
   }
 };

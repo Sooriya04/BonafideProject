@@ -1,24 +1,20 @@
 const ejs = require('ejs');
 const path = require('path');
-const wkhtmltopdf = require('wkhtmltopdf');
-const { promisify } = require('util');
-
-const wkhtmltopdfAsync = promisify(wkhtmltopdf);
+const htmlPdf = require('html-pdf-node');
 
 async function generateBonafidePDF(formData) {
   const templatePath = path.join(__dirname, '../views/bonafideTemplate.ejs');
   const html = await ejs.renderFile(templatePath, { formData });
 
-  const buffer = await wkhtmltopdfAsync(html, {
-    pageSize: 'A4',
-    marginTop: '20mm',
-    marginRight: '20mm',
-    marginBottom: '20mm',
-    marginLeft: '20mm',
-    printMediaType: true,
-  });
+  const file = { content: html };
+  const options = {
+    format: 'A4',
+    margin: { top: '20mm', bottom: '20mm', left: '20mm', right: '20mm' },
+    printBackground: true,
+  };
 
-  return buffer;
+  const pdfBuffer = await htmlPdf.generatePdf(file, options);
+  return pdfBuffer;
 }
 
 module.exports = generateBonafidePDF;
