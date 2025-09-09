@@ -1,6 +1,6 @@
 const ejs = require('ejs');
 const path = require('path');
-const htmlPdf = require('html-pdf-node');
+const wkhtmltopdf = require('wkhtmltopdf');
 const wkhtmltopdfInstaller = require('wkhtmltopdf-installer');
 const admin = require('firebase-admin');
 
@@ -27,15 +27,28 @@ exports.downloadBonafide = async (req, res) => {
       allHtml += `<div style="page-break-after: always;">${certHtml}</div>`;
     }
 
-    const file = { content: allHtml };
-    const options = {
-      format: 'A4',
-      margin: { top: '20mm', bottom: '20mm', left: '20mm', right: '20mm' },
-      printBackground: true,
-      executablePath: wkhtmltopdfInstaller.path, // crucial: forces wkhtmltopdf
-    };
-
-    const pdfBuffer = await htmlPdf.generatePdf(file, options);
+    // Generate PDF buffer
+    const pdfBuffer = await new Promise((resolve, reject) => {
+      wkhtmltopdf(
+        allHtml,
+        {
+          output: '-', // stream to buffer
+          pageSize: 'A4',
+          marginTop: '20mm',
+          marginBottom: '20mm',
+          marginLeft: '20mm',
+          marginRight: '20mm',
+          executablePath: wkhtmltopdfInstaller.path,
+        },
+        (err, stream) => {
+          if (err) return reject(err);
+          const chunks = [];
+          stream.on('data', (chunk) => chunks.push(chunk));
+          stream.on('end', () => resolve(Buffer.concat(chunks)));
+          stream.on('error', reject);
+        }
+      );
+    });
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'inline; filename=bonafide.pdf');
