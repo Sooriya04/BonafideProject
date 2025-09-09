@@ -14,11 +14,10 @@
         background: white;
       }
       .certificate {
-        width: 90%;
+        width: 100%;
         margin: auto;
-        line-height: 1.8; /* more spacing between lines */
-        font-size: 18px;
-        position: relative;
+        line-height: 2;
+        font-size: 23px;
         box-sizing: border-box;
       }
       .center {
@@ -27,36 +26,33 @@
       .row {
         display: flex;
         justify-content: space-between;
-        margin: 10px 0;
-      }
-      h2 {
-        font-size: 20px;
-        font-weight: bold;
-        margin-bottom: 0;
+        margin: 12px 0;
+        font-size: 22px; /* bigger for PDF */
       }
       p.center {
         margin-top: 2px;
-        font-size: 15px;
+        font-size: 22px;
       }
       .header-line {
         border-top: 2px solid black;
-        margin: 10px 0 20px;
+        margin: 12px 0 22px;
       }
-      h3 {
-        text-align: center;
-        font-size: 18px;
-        font-weight: bold;
-        margin: 25px 0;
+      h3.center:first-of-type {
+        white-space: nowrap; /* prevents line breaks */
+        font-size: 26px; /* adjust to fit A4 */
+        margin: 0 auto 10px auto;
       }
+
       .body-text {
         text-align: justify;
-        font-size: 19px;
-        margin-top: 30px;
+        font-size: 25px; /* increase for PDF readability */
+        margin-top: 28px;
       }
       .signature {
-        margin-top: 250px;
+        margin-top: 280px; /* reasonable spacing */
         text-align: right;
         font-weight: bold;
+        font-size: 28px; /* signature larger too */
       }
       .footer-line {
         border-top: 1px solid black;
@@ -64,27 +60,8 @@
       }
       .footer {
         text-align: center;
-        font-size: 14px;
+        font-size: 22px; /* readable in PDF */
         margin-top: 5px;
-      }
-      .print-btn {
-        display: block;
-        margin: 20px auto;
-        padding: 10px 20px;
-        background: black;
-        color: white;
-        border: none;
-        font-size: 16px;
-        cursor: pointer;
-        border-radius: 6px;
-      }
-      .print-btn:hover {
-        background: #444;
-      }
-      @media print {
-        .print-btn {
-          display: none;
-        }
       }
     </style>
   </head>
@@ -104,7 +81,7 @@
         <p>Date: <%= String(formData.date) %></p>
       </div>
 
-      <h3>BONAFIDE CERTIFICATE</h3>
+      <h3 class="center">BONAFIDE CERTIFICATE</h3>
 
       <p class="body-text">
         Certified that
@@ -139,10 +116,5 @@
         &nbsp;&nbsp;&nbsp; Email: tceoffice@tce.edu
       </p>
     </div>
-
-    <!-- Print button outside certificate
-    <button class="print-btn" onclick="window.print()">
-      Print Certificate
-    </button> -->
   </body>
 </html>
