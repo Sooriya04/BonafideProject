@@ -55,7 +55,6 @@
     "tmp": "^0.2.5",
     "util": "^0.12.5",
     "uuid": "^11.1.0",
-    "wkhtmltopdf": "^0.4.0",
     "wkhtmltopdf-installer": "^0.3.2"
   }
 }

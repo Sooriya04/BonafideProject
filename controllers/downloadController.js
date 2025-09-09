@@ -1,7 +1,6 @@
 const ejs = require('ejs');
 const path = require('path');
-const wkhtmltopdf = require('wkhtmltopdf');
-const wkhtmltopdfInstaller = require('wkhtmltopdf-installer');
+const pdf = require('html-pdf');
 const admin = require('firebase-admin');
 
 const db = admin.firestore();
@@ -27,34 +26,29 @@ exports.downloadBonafide = async (req, res) => {
       allHtml += `<div style="page-break-after: always;">${certHtml}</div>`;
     }
 
-    // Generate PDF buffer
-    const pdfBuffer = await new Promise((resolve, reject) => {
-      wkhtmltopdf(
-        allHtml,
-        {
-          output: '-', // stream to buffer
-          pageSize: 'A4',
-          marginTop: '20mm',
-          marginBottom: '20mm',
-          marginLeft: '20mm',
-          marginRight: '20mm',
-          executablePath: wkhtmltopdfInstaller.path,
+    // Generate PDF
+    pdf
+      .create(allHtml, {
+        format: 'A4',
+        border: {
+          top: '20mm',
+          right: '20mm',
+          bottom: '20mm',
+          left: '20mm',
         },
-        (err, stream) => {
-          if (err) return reject(err);
-          const chunks = [];
-          stream.on('data', (chunk) => chunks.push(chunk));
-          stream.on('end', () => resolve(Buffer.concat(chunks)));
-          stream.on('error', reject);
+      })
+      .toBuffer((err, buffer) => {
+        if (err) {
+          console.error('PDF generation error:', err);
+          return res.status(500).send('Error generating PDF');
         }
-      );
-    });
 
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', 'inline; filename=bonafide.pdf');
-    res.send(pdfBuffer);
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', 'inline; filename=bonafide.pdf');
+        res.send(buffer);
+      });
   } catch (err) {
-    console.error('PDF generation error:', err);
-    res.status(500).send('Error generating PDF: ' + err.message);
+    console.error('Error generating PDFs:', err);
+    res.status(500).send('Error generating PDFs: ' + err.message);
   }
 };
