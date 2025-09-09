@@ -43,15 +43,12 @@ exports.confirmForm = async (req, res) => {
 
   try {
     const now = new Date();
-    const currentYear = now.getFullYear();
-    const nextYear = currentYear + 1;
-    finalData.academicYear = `${currentYear}-${nextYear}`;
+    finalData.academicYear = `${now.getFullYear()}-${now.getFullYear() + 1}`;
 
     await db.collection('bonafideForms').add({
       ...finalData,
       createdAt: new Date(),
     });
-
     const buffer = await generateBonafidePDF(finalData);
 
     const folderName = now.toLocaleString('en-US', {
@@ -72,7 +69,7 @@ exports.confirmForm = async (req, res) => {
     req.session.bonafideData = null;
     res.render('success', { name: finalData.name });
   } catch (err) {
-    console.error('Error saving form or uploading PDF:', err);
+    console.error('Error saving form or generating PDF:', err);
     res.status(500).send('Error saving form data or generating PDF.');
   }
 };
