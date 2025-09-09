@@ -5,19 +5,19 @@
     <style>
       @page {
         size: A4;
-        margin: 30mm;
+        margin: 20mm;
       }
       body {
-        font-family: Arial, serif;
+        font-family: 'Times New Roman', serif;
         margin: 0;
         padding: 0;
         background: white;
       }
       .certificate {
-        width: 100%;
+        width: 95%;
         margin: auto;
-        line-height: 2;
-        font-size: 23px;
+        line-height: 1.6; /* reduced for single page */
+        font-size: 20px; /* readable but fits */
         box-sizing: border-box;
       }
       .center {
@@ -26,43 +26,44 @@
       .row {
         display: flex;
         justify-content: space-between;
-        margin: 12px 0;
-        font-size: 22px; /* bigger for PDF */
+        margin: 8px 0;
+        font-size: 18px;
       }
       p.center {
         margin-top: 2px;
-        font-size: 22px;
+        font-size: 18px;
       }
       .header-line {
         border-top: 2px solid black;
-        margin: 12px 0 22px;
+        margin: 10px 0 15px;
       }
       h3.center:first-of-type {
-        white-space: nowrap; /* prevents line breaks */
-        font-size: 26px; /* adjust to fit A4 */
-        margin: 0 auto 10px auto;
+        white-space: nowrap;
+        font-size: 24px;
+        margin: 0 auto 5px auto;
       }
-
+      h3.center:last-of-type {
+        font-size: 22px;
+        margin: 20px 0;
+      }
       .body-text {
         text-align: justify;
-        font-size: 25px; /* increase for PDF readability */
-        margin-top: 28px;
-        padding: 1rem;
+        font-size: 20px;
+        margin-top: 15px;
       }
       .signature {
-        margin-top: 320px;
+        margin-top: 180px; /* reduced spacing to fit single page */
         text-align: right;
         font-weight: bold;
-        font-size: 28px;
-        margin-bottom: -10px;
+        font-size: 22px;
       }
       .footer-line {
         border-top: 1px solid black;
-        margin-top: 60px;
+        margin-top: 40px;
       }
       .footer {
         text-align: center;
-        font-size: 22px; /* readable in PDF */
+        font-size: 16px;
         margin-top: 5px;
       }
     </style>
@@ -86,7 +87,7 @@
       <h3 class="center">BONAFIDE CERTIFICATE</h3>
 
       <p class="body-text">
-        &nbsp; &nbsp; Certified that
+        Certified that
         <strong
           ><%= String(formData.title) %> <%= String(formData.name) %></strong
         >, (Roll No: <strong><%= String(formData.rollno) %></strong>)
@@ -103,7 +104,7 @@
       </p>
 
       <p class="body-text">
-        &nbsp; This Certificate is issued to enable him/her to apply for
+        This Certificate is issued to enable him/her to apply for
         <strong><%= String(formData.certificateFor) %></strong>
         <% if (formData.scholarshipType) { %> (<%=
         String(formData.scholarshipType) %>) <% } %>.
@@ -112,7 +113,6 @@
       <p class="signature">PRINCIPAL</p>
 
       <div class="footer-line"></div>
-
       <p class="footer">
         Ph.No. 0452-2482240-42 &nbsp;&nbsp;&nbsp; Fax No: 0452-2483427
         &nbsp;&nbsp;&nbsp; Email: tceoffice@tce.edu
