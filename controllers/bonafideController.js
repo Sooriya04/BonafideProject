@@ -46,17 +46,12 @@ exports.confirmForm = async (req, res) => {
     const currentYear = now.getFullYear();
     const nextYear = currentYear + 1;
     finalData.academicYear = `${currentYear}-${nextYear}`;
+    await db
+      .collection('bonafideForms')
+      .add({ ...finalData, createdAt: new Date() });
 
-    // Save form data
-    await db.collection('bonafideForms').add({
-      ...finalData,
-      createdAt: new Date(),
-    });
+    const buffer = await generateBonafidePDF(finalData);
 
-    // Generate PDF buffer without Chromium
-    const pdfBuffer = await generateBonafidePDF(finalData);
-
-    // Upload PDF to Google Drive
     const folderName = now.toLocaleString('en-US', {
       month: 'long',
       year: 'numeric',
@@ -66,10 +61,9 @@ exports.confirmForm = async (req, res) => {
       now.getMonth() + 1
     ).padStart(2, '0')}-${now.getFullYear()}-bonafide-${finalData.rollno}.pdf`;
 
-    await uploadFile(pdfBuffer, fileName, folderId);
+    await uploadFile(buffer, fileName, folderId);
 
-    // Send notification
-    await sendBonafideNotification(finalData, pdfBuffer, fileName);
+    await sendBonafideNotification(finalData, buffer, fileName);
 
     req.session.bonafideData = null;
     res.render('success', { name: finalData.name });
