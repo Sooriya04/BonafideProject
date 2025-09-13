@@ -14,11 +14,10 @@
         background: white;
       }
       .certificate {
-        width: 90%;
+        width: 95%;
         margin: auto;
-        line-height: 1.8; /* more spacing between lines */
-        font-size: 18px;
-        position: relative;
+        line-height: 1.5;
+        font-size: 14px;
         box-sizing: border-box;
       }
       .center {
@@ -27,64 +26,36 @@
       .row {
         display: flex;
         justify-content: space-between;
-        margin: 10px 0;
-      }
-      h2 {
-        font-size: 20px;
-        font-weight: bold;
-        margin-bottom: 0;
-      }
-      p.center {
-        margin-top: 2px;
-        font-size: 15px;
+        margin: 10px 0 5px 0;
+        font-size: 13px;
       }
       .header-line {
         border-top: 2px solid black;
-        margin: 10px 0 20px;
+        margin: 5px 0 10px 0;
       }
-      h3 {
-        text-align: center;
-        font-size: 18px;
-        font-weight: bold;
-        margin: 25px 0;
+      h3.center {
+        font-size: 16px;
+        margin: 0;
       }
       .body-text {
         text-align: justify;
-        font-size: 19px;
-        margin-top: 30px;
+        font-size: 14px;
+        margin-top: 10px;
       }
       .signature {
-        margin-top: 250px;
+        margin-top: 120px;
         text-align: right;
         font-weight: bold;
+        font-size: 16px;
       }
       .footer-line {
         border-top: 1px solid black;
-        margin-top: 60px;
+        margin-top: 30px;
       }
       .footer {
         text-align: center;
-        font-size: 14px;
+        font-size: 12px;
         margin-top: 5px;
-      }
-      .print-btn {
-        display: block;
-        margin: 20px auto;
-        padding: 10px 20px;
-        background: black;
-        color: white;
-        border: none;
-        font-size: 16px;
-        cursor: pointer;
-        border-radius: 6px;
-      }
-      .print-btn:hover {
-        background: #444;
-      }
-      @media print {
-        .print-btn {
-          display: none;
-        }
       }
     </style>
   </head>
@@ -104,7 +75,7 @@
         <p>Date: <%= String(formData.date) %></p>
       </div>
 
-      <h3>BONAFIDE CERTIFICATE</h3>
+      <h3 class="center">BONAFIDE CERTIFICATE</h3>
 
       <p class="body-text">
         Certified that
@@ -127,22 +98,16 @@
         This Certificate is issued to enable him/her to apply for
         <strong><%= String(formData.certificateFor) %></strong>
         <% if (formData.scholarshipType) { %> (<%=
-        String(formData.scholarshipType) %>) <% } %>.
+        String(formData.scholarshipType) %>) <% } %>
       </p>
 
       <p class="signature">PRINCIPAL</p>
 
       <div class="footer-line"></div>
-
       <p class="footer">
         Ph.No. 0452-2482240-42 &nbsp;&nbsp;&nbsp; Fax No: 0452-2483427
         &nbsp;&nbsp;&nbsp; Email: tceoffice@tce.edu
       </p>
     </div>
-
-    <!-- Print button outside certificate
-    <button class="print-btn" onclick="window.print()">
-      Print Certificate
-    </button> -->
   </body>
 </html>
