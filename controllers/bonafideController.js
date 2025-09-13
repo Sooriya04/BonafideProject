@@ -19,8 +19,8 @@ exports.postForm = (req, res) => {
   const nextYear = currentYear + 1;
 
   const formData = {
-    title: req.body.title.toUpperCase(),
-    name: req.body.name,
+    title: req.body.title,
+    name: req.body.name.toUpperCase(),
     rollno: req.body.rollno,
     relation: req.body.relation,
     parentName: req.body.parentName.toUpperCase(),
